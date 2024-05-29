@@ -4,9 +4,10 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5 import uic
 from PyQt5.QtCore import *
-# import res2_rc
+from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
+from PyQt5.QtMultimediaWidgets import QVideoWidget
 import requests
-import time
+
 
 from_class = uic.loadUiType('/home/ys/Downloads/login.ui')[0] # 현복 login ui파일 
 sign_up_class = uic.loadUiType('/home/ys/Downloads//signup.ui')[0] # 현복 Sign_up ui 파일
@@ -21,6 +22,7 @@ class Total_gui_Window(QMainWindow, total_gui_class):
         
         self.setWindowTitle("Main Window") 
         
+        # 메뉴용 버튼
         self.windows.clicked.connect(self.switch_to_windowPage)
         self.windows1.clicked.connect(self.switch_to_windowPage)
         self.file.clicked.connect(self.switch_to_filesPage)
@@ -30,22 +32,59 @@ class Total_gui_Window(QMainWindow, total_gui_class):
         self.set.clicked.connect(self.switch_to_settingsPage)
         self.set1.clicked.connect(self.switch_to_settingsPage)
         
+        # 윈도우창 내 버튼용
         self.upload.clicked.connect(self.upload_files)
-        self.analyze.clicked.connect(self.analyze_files)
+        self.upload1.clicked.connect(self.upload_files1)
+        self.sign1.clicked.connect(self.switch_login) # Logout 버튼
+        self.sign.clicked.connect(self.switch_login) # Logout 버튼
+        self.details_2.clicked.connect(self.switch_detail) # detail page 전환
+        # self.analyze.clicked.connect(self.analyze_files)
+        # self.show_graph.clicked.connect(self.show_files)
         
         self.model1 = QStringListModel()
         self.filelist.setModel(self.model1)
         self.model2 = QStringListModel()
         self.filelist1.setModel(self.model2)
         
+        self.files = []
+        self.files1 = []
+        
+        # files창 용 
         self.model = QFileSystemModel()
         self.model.setRootPath('home')
         self.fileTreeView.setModel(self.model)
         self.fileTreeView.setRootIndex(self.model.index('home'))
         self.fileTreeView.setColumnWidth(0, 250)
         
-        self.files = []
+        # details창 용
+        self.d_upload.clicked.connect(self.d_upload_files)
+        self.d_upload1.clicked.connect(self.d_upload_files1)
+        self.select.clicked.connect(self.load_videos)
+        self.select1.clicked.connect(self.load_videos1)
+        self.playbtn.clicked.connect(self.toggle_playback)
+        
+        self.d_model1 = QStringListModel()
+        self.d_filelist.setModel(self.d_model1)
+        self.d_model2 = QStringListModel()
+        self.d_filelist1.setModel(self.d_model2)
+        
+        self.d_files = []
+        self.d_files1 = []
+        
+        # self.video_player = QMediaPlayer(None, QMediaPlayer.VideoSurface)
+        # self.video_widget = QVideoWidget(self)
+        # self.video_layout.addWidget(self.video_widget)  # Assume video_layout is the layout where QLabel is added
+        # self.video_player.setVideoOutput(self.video_widget)
+        
+        # QVideoWidget 설정
+        self.video_player = QMediaPlayer(None, QMediaPlayer.VideoSurface)
+        self.video_widget = QVideoWidget(self)
+
+        # QLabel (label_4)를 QVideoWidget으로 대체
+        self.label_4 = QVBoxLayout(self.label_4)
+        self.video_player.setVideoOutput(self.video_widget)
     
+    #메뉴 배너용 창 전환 설정
     def switch_to_windowPage(self):
         self.stackedWidget.setCurrentIndex(0)
         
@@ -58,6 +97,7 @@ class Total_gui_Window(QMainWindow, total_gui_class):
     def switch_to_settingsPage(self):
         self.stackedWidget.setCurrentIndex(4)
     
+    #윈도우창의 uplaod 버튼용
     def upload_files(self):
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
@@ -65,33 +105,101 @@ class Total_gui_Window(QMainWindow, total_gui_class):
         if files:
             self.files = files
             self.model1.setStringList(files) 
+            
+    def upload_files1(self):
+        options = QFileDialog.Options()
+        options |= QFileDialog.DontUseNativeDialog
+        files, _ = QFileDialog.getOpenFileNames(self, "동영상 파일 선택", "", "동영상 파일 (*.mp4 *.avi *.mov *.mkv);;모든 파일 (*)", options=options)
+        if files:
+            self.files1 = files
+            self.model2.setStringList(files) 
+    
+    #details창의 upload 버튼용
+    def d_upload_files(self):
+        options = QFileDialog.Options()
+        options |= QFileDialog.DontUseNativeDialog
+        files, _ = QFileDialog.getOpenFileNames(self, "동영상 파일 선택", "", "동영상 파일 (*.mp4 *.avi *.mov *.mkv);;모든 파일 (*)", options=options)
+        if files:
+            self.d_files = files
+            self.d_model1.setStringList(files) 
+            
+    def d_upload_files1(self):
+        options = QFileDialog.Options()
+        options |= QFileDialog.DontUseNativeDialog
+        files, _ = QFileDialog.getOpenFileNames(self, "동영상 파일 선택", "", "동영상 파일 (*.mp4 *.avi *.mov *.mkv);;모든 파일 (*)", options=options)
+        if files:
+            self.d_files1 = files
+            self.d_model2.setStringList(files) 
 
+    #details창의 select 버튼용 (동영상 append 및 재생버튼)
+    
+    # def load_videos(self):
+    #     selected_indexes = self.d_filelist.selectedIndexes()
+    #     if selected_indexes:
+    #         selected_file = self.d_files[selected_indexes[0].row()]
+    #         self.video_player.setMedia(QMediaContent(QUrl.fromLocalFile(selected_file)))
+    #         self.append_video_to_label(selected_file)
+            
+    # def load_videos1(self):
+    #     selected_indexes = self.d_filelist1.selectedIndexes()
+    #     if selected_indexes:
+    #         selected_file = self.d_files1[selected_indexes[0].row()]
+    #         self.video_player.setMedia(QMediaContent(QUrl.fromLocalFile(selected_file)))
+    #         self.append_video_to_label(selected_file)
+    
+    # def append_video_to_label(self, video_path):
+    #     current_text = self.label_4.text()
+    #     new_text = current_text + '\n' + video_path if current_text else video_path
+    #     self.label_4.setText(new_text)
+            
+    def toggle_playback(self):
+        if self.video_player.state() == QMediaPlayer.PlayingState:
+            self.video_player.pause()
+        else:
+            self.video_player.play()
+    
+    # Detail 화면 전환
+    def switch_detail(self):
+        self.stackedWidget.setCurrentIndex(2)
+    # Logout 기능
+    def switch_login(self):
+        reply = QMessageBox.question(self, 'Message', '로그인 화면으로 돌아가시겠습니까?',
+                                     QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+        if reply == QMessageBox.Yes:
+            self.go_back()
+        else:
+            pass
+    
 
-    def analyze_files(self):
-        if not self.files:
-            QMessageBox.warning(self, "Warning", "먼저 파일을 업로드하십시오.")
-            return
+    # def show_files(self):
+    #     sdlkfjasld
+        
+#--------------------------------------------------------------------------------------------------------------------------------
+    # def analyze_files(self):
+    #     if not self.files:
+    #         QMessageBox.warning(self, "Warning", "먼저 파일을 업로드하십시오.")
+    #         return
 
-        url = 'http://192.168.0.156:5000/api/video'  # 대상 PC의 IP 주소와 포트를 설정하십시오.
-        response_files = []
+    #     url = 'http://192.168.0.156:5000/api/video'  # 대상 PC의 IP 주소와 포트를 설정하십시오.
+    #     response_files = []
         
-        progress_dialog = QProgressDialog("파일 전송 중...", None, 0, len(self.files), self)
-        progress_dialog.setWindowTitle("전송 중")
-        progress_dialog.setWindowModality(Qt.WindowModal)
+    #     progress_dialog = QProgressDialog("파일 전송 중...", None, 0, len(self.files), self)
+    #     progress_dialog.setWindowTitle("전송 중")
+    #     progress_dialog.setWindowModality(Qt.WindowModal)
         
-        for file_path in self.files:
-            try:
-                with open(file_path, 'rb') as f:
-                    files = {'file': (os.path.basename(file_path), f)}
-                    response = requests.post(url, files=files)
-                    if response.status_code == 200:
-                        response_files.append(os.path.basename(file_path))
-                    else:
-                        QMessageBox.warning(self, "Failed", f"{os.path.basename(file_path)} 파일 전송 실패: {response.status_code}")
-            except Exception as e:
-                QMessageBox.critical(self, "Error", f"파일 전송 중 오류 발생: {str(e)}")
+    #     for file_path in self.files:
+    #         try:
+    #             with open(file_path, 'rb') as f:
+    #                 files = {'file': (os.path.basename(file_path), f)}
+    #                 response = requests.post(url, files=files)
+    #                 if response.status_code == 200:
+    #                     response_files.append(os.path.basename(file_path))
+    #                 else:
+    #                     QMessageBox.warning(self, "Failed", f"{os.path.basename(file_path)} 파일 전송 실패: {response.status_code}")
+    #         except Exception as e:
+    #             QMessageBox.critical(self, "Error", f"파일 전송 중 오류 발생: {str(e)}")
         
-        # # 서버로부터 파일이 처리된 후 다시 받기
+        # 서버로부터 파일이 처리된 후 다시 받기
         # self.receive_processed_files(response_files) 파일 전체 업로드 후 순차적으로 분석해서 가져오기 그 후 마지막에 그래프로 나타내기
 
     # def receive_processed_files(self, file_names):
@@ -120,7 +228,7 @@ class Total_gui_Window(QMainWindow, total_gui_class):
 
     #     self.model2.setStringList(processed_files)  # 처리된 파일 목록을 QStringListModel에 설정하여 QListView에 표시
 
-
+# -------------------------------------------------------------------------------------------------------------------------------------------
 
 
 # Sign up Class
@@ -136,7 +244,7 @@ class Sign_up_Window(QDialog, sign_up_class):
         user_id = self.Idld.text()
         
         data = {'user_id': user_id}
-        response = requests.post('http://192.168.0.201:5000/api/check', json=data)
+        response = requests.post('http://192.168.0.156:5000/api/check', json=data)
         
         if response.status_code == 401:
             
@@ -178,7 +286,7 @@ class Sign_up_Window(QDialog, sign_up_class):
             
             
         data = {'user_birthday':user_birthday, 'user_name': user_name, 'user_id': user_id, 'user_password':user_password}
-        response = requests.post('http://192.168.0.201:5000/api/signup', json=data)
+        response = requests.post('http://192.168.0.156:5000/api/signup', json=data)
         
         
         if response.status_code == 201:
@@ -210,7 +318,7 @@ class WindowClass(QMainWindow, from_class) :
         user_password = self.Passwordedit.text()
         
         data = {'user_id': user_id, 'user_password':user_password}
-        response = requests.post('http://192.168.0.201:5000/api/signin', json=data)
+        response = requests.post('http://192.168.0.156:5000/api/signin', json=data)
         
         
         if response.status_code == 201:
@@ -241,7 +349,8 @@ class WindowClass(QMainWindow, from_class) :
        
 if __name__ == "__main__":
     app = QApplication(sys.argv) 
-    myWindows = WindowClass() 
+    # myWindows = WindowClass() 
+    myWindows = Total_gui_Window() 
     myWindows.show() 
     
     sys.exit(app.exec_()) 
