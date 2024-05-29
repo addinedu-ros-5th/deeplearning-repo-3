@@ -13,6 +13,19 @@ db = mysql.connector.connect(
     database="Driving"
 )
 
+@app.route('/api/check', methods=['POST'])
+def check_id():
+    data = request.get_json()
+    id = data.get('user_id')
+    cursor = db.cursor()
+    cursor.execute("SELECT * FROM member WHERE ID = %s", (id,))
+    user = cursor.fetchone()
+
+    if user:
+        return jsonify({'eerror': '중복된 아이디 임다'}), 401
+    else:
+        return jsonify({'messag': '사용 가능'}), 201
+
 @app.route('/api/signup', methods=['POST'])
 def signup():
     data = request.get_json()
