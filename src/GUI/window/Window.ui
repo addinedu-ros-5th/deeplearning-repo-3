@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1271</width>
-    <height>878</height>
+    <height>858</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -74,7 +74,7 @@ Font-weight:bold;
           <string/>
          </property>
          <property name="pixmap">
-          <pixmap resource="resources.qrc">:/image/profile_pic.png</pixmap>
+          <pixmap>:/image/profile_pic.png</pixmap>
          </property>
          <property name="scaledContents">
           <bool>true</bool>
@@ -111,7 +111,7 @@ Font-weight:bold;
             <string/>
            </property>
            <property name="icon">
-            <iconset resource="resources.qrc">
+            <iconset>
              <normaloff>:/image/window.png</normaloff>
              <normalon>:/image/window.png</normalon>:/image/window.png</iconset>
            </property>
@@ -124,12 +124,12 @@ Font-weight:bold;
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="files">
+          <widget class="QPushButton" name="file">
            <property name="text">
             <string/>
            </property>
            <property name="icon">
-            <iconset resource="resources.qrc">
+            <iconset>
              <normaloff>:/image/folder.png</normaloff>
              <normalon>:/image/folder.png</normalon>:/image/folder.png</iconset>
            </property>
@@ -147,7 +147,7 @@ Font-weight:bold;
             <string/>
            </property>
            <property name="icon">
-            <iconset resource="resources.qrc">
+            <iconset>
              <normaloff>:/image/search.png</normaloff>
              <normalon>:/image/search.png</normalon>:/image/search.png</iconset>
            </property>
@@ -165,7 +165,7 @@ Font-weight:bold;
             <string/>
            </property>
            <property name="icon">
-            <iconset resource="resources.qrc">
+            <iconset>
              <normaloff>:/image/settings.png</normaloff>
              <normalon>:/image/settings.png</normalon>:/image/settings.png</iconset>
            </property>
@@ -201,11 +201,11 @@ Font-weight:bold;
           <string/>
          </property>
          <property name="icon">
-          <iconset resource="resources.qrc">
+          <iconset>
            <normaloff>:/image/log_out.png</normaloff>:/image/log_out.png</iconset>
          </property>
          <property name="checkable">
-          <bool>true</bool>
+          <bool>false</bool>
          </property>
          <property name="autoExclusive">
           <bool>false</bool>
@@ -268,7 +268,7 @@ Font-weight:bold;
           <string/>
          </property>
          <property name="pixmap">
-          <pixmap resource="resources.qrc">:/image/profile_pic.png</pixmap>
+          <pixmap>:/image/profile_pic.png</pixmap>
          </property>
          <property name="scaledContents">
           <bool>true</bool>
@@ -308,7 +308,7 @@ Font-weight:bold;
             <string>Windows  </string>
            </property>
            <property name="icon">
-            <iconset resource="resources.qrc">
+            <iconset>
              <normaloff>:/image/window_wh.png</normaloff>
              <normalon>:/image/window_wh.png</normalon>:/image/window_wh.png</iconset>
            </property>
@@ -321,12 +321,12 @@ Font-weight:bold;
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="files1">
+          <widget class="QPushButton" name="file1">
            <property name="text">
             <string>Files</string>
            </property>
            <property name="icon">
-            <iconset resource="resources.qrc">
+            <iconset>
              <normaloff>:/image/folder_wh.png</normaloff>
              <normalon>:/image/folder_wh.png</normalon>:/image/folder_wh.png</iconset>
            </property>
@@ -344,7 +344,7 @@ Font-weight:bold;
             <string>Details</string>
            </property>
            <property name="icon">
-            <iconset resource="resources.qrc">
+            <iconset>
              <normaloff>:/image/search_wh.png</normaloff>
              <normalon>:/image/search_wh.png</normalon>:/image/search_wh.png</iconset>
            </property>
@@ -362,7 +362,7 @@ Font-weight:bold;
             <string>Settings</string>
            </property>
            <property name="icon">
-            <iconset resource="resources.qrc">
+            <iconset>
              <normaloff>:/image/settings_wh.png</normaloff>
              <normalon>:/image/settings_wh.png</normalon>:/image/settings_wh.png</iconset>
            </property>
@@ -398,14 +398,14 @@ Font-weight:bold;
           <string>Log Out  </string>
          </property>
          <property name="icon">
-          <iconset resource="resources.qrc">
+          <iconset>
            <normaloff>:/image/log_out_white.png</normaloff>:/image/log_out_white.png</iconset>
          </property>
          <property name="checkable">
-          <bool>true</bool>
+          <bool>false</bool>
          </property>
          <property name="autoExclusive">
-          <bool>true</bool>
+          <bool>false</bool>
          </property>
         </widget>
        </item>
@@ -427,7 +427,7 @@ Font-weight:bold;
              <string/>
             </property>
             <property name="icon">
-             <iconset resource="resources.qrc">
+             <iconset>
               <normaloff>:/image/menu.png</normaloff>:/image/menu.png</iconset>
             </property>
             <property name="iconSize">
@@ -471,7 +471,7 @@ Font-weight:bold;
                <string/>
               </property>
               <property name="icon">
-               <iconset resource="resources.qrc">
+               <iconset>
                 <normaloff>:/image/search.png</normaloff>:/image/search.png</iconset>
               </property>
              </widget>
@@ -503,7 +503,7 @@ Font-weight:bold;
              <string/>
             </property>
             <property name="icon">
-             <iconset resource="resources.qrc">
+             <iconset>
               <normaloff>:/image/image.png</normaloff>:/image/image.png</iconset>
             </property>
             <property name="iconSize">
@@ -536,10 +536,10 @@ border:none;
           <widget class="QLabel" name="graph">
            <property name="geometry">
             <rect>
-             <x>10</x>
-             <y>80</y>
+             <x>410</x>
+             <y>70</y>
              <width>601</width>
-             <height>331</height>
+             <height>381</height>
             </rect>
            </property>
            <property name="font">
@@ -560,10 +560,10 @@ border:none;
           <widget class="QLineEdit" name="grade">
            <property name="geometry">
             <rect>
-             <x>640</x>
-             <y>80</y>
-             <width>351</width>
-             <height>191</height>
+             <x>20</x>
+             <y>470</y>
+             <width>371</width>
+             <height>241</height>
             </rect>
            </property>
            <property name="font">
@@ -578,10 +578,10 @@ border:none;
           <widget class="QTableView" name="wrong">
            <property name="geometry">
             <rect>
-             <x>10</x>
-             <y>460</y>
+             <x>410</x>
+             <y>470</y>
              <width>601</width>
-             <height>271</height>
+             <height>241</height>
             </rect>
            </property>
            <property name="styleSheet">
@@ -591,13 +591,13 @@ border:none;
             <enum>QFrame::Box</enum>
            </property>
           </widget>
-          <widget class="QPushButton" name="pushButton">
+          <widget class="QPushButton" name="upload">
            <property name="geometry">
             <rect>
              <x>20</x>
              <y>20</y>
              <width>101</width>
-             <height>51</height>
+             <height>41</height>
             </rect>
            </property>
            <property name="font">
@@ -609,7 +609,7 @@ border:none;
             <string>Upload</string>
            </property>
            <property name="icon">
-            <iconset resource="resources.qrc">
+            <iconset>
              <normaloff>:/image/upload.png</normaloff>:/image/upload.png</iconset>
            </property>
            <property name="iconSize">
@@ -619,13 +619,13 @@ border:none;
             </size>
            </property>
           </widget>
-          <widget class="QPushButton" name="pushButton_2">
+          <widget class="QPushButton" name="analyze">
            <property name="geometry">
             <rect>
              <x>150</x>
              <y>20</y>
              <width>121</width>
-             <height>51</height>
+             <height>41</height>
             </rect>
            </property>
            <property name="font">
@@ -637,7 +637,7 @@ border:none;
             <string>Analyze</string>
            </property>
            <property name="icon">
-            <iconset resource="resources.qrc">
+            <iconset>
              <normaloff>:/image/analytics.png</normaloff>:/image/analytics.png</iconset>
            </property>
            <property name="iconSize">
@@ -647,13 +647,13 @@ border:none;
             </size>
            </property>
           </widget>
-          <widget class="QPushButton" name="pushButton_3">
+          <widget class="QPushButton" name="details_2">
            <property name="geometry">
             <rect>
-             <x>870</x>
-             <y>30</y>
+             <x>890</x>
+             <y>20</y>
              <width>121</width>
-             <height>51</height>
+             <height>41</height>
             </rect>
            </property>
            <property name="font">
@@ -665,7 +665,7 @@ border:none;
             <string>Details</string>
            </property>
            <property name="icon">
-            <iconset resource="resources.qrc">
+            <iconset>
              <normaloff>:/image/report.png</normaloff>:/image/report.png</iconset>
            </property>
            <property name="iconSize">
@@ -673,6 +673,52 @@ border:none;
              <width>24</width>
              <height>24</height>
             </size>
+           </property>
+          </widget>
+          <widget class="QListView" name="filelist">
+           <property name="geometry">
+            <rect>
+             <x>20</x>
+             <y>100</y>
+             <width>371</width>
+             <height>161</height>
+            </rect>
+           </property>
+          </widget>
+          <widget class="QListView" name="filelist1">
+           <property name="geometry">
+            <rect>
+             <x>20</x>
+             <y>290</y>
+             <width>371</width>
+             <height>161</height>
+            </rect>
+           </property>
+          </widget>
+          <widget class="QLabel" name="label_10">
+           <property name="geometry">
+            <rect>
+             <x>20</x>
+             <y>70</y>
+             <width>101</width>
+             <height>17</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Original Files</string>
+           </property>
+          </widget>
+          <widget class="QLabel" name="label_11">
+           <property name="geometry">
+            <rect>
+             <x>20</x>
+             <y>270</y>
+             <width>101</width>
+             <height>17</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Receive Files</string>
            </property>
           </widget>
          </widget>
@@ -746,7 +792,7 @@ border:none;
             <string>export</string>
            </property>
            <property name="icon">
-            <iconset resource="resources.qrc">
+            <iconset>
              <normaloff>:/image/report.png</normaloff>:/image/report.png</iconset>
            </property>
            <property name="iconSize">
@@ -939,27 +985,27 @@ border:none;
    <hints>
     <hint type="sourcelabel">
      <x>55</x>
-     <y>166</y>
+     <y>151</y>
     </hint>
     <hint type="destinationlabel">
-     <x>109</x>
-     <y>145</y>
+     <x>183</x>
+     <y>151</y>
     </hint>
    </hints>
   </connection>
   <connection>
-   <sender>files</sender>
+   <sender>file</sender>
    <signal>toggled(bool)</signal>
-   <receiver>files1</receiver>
+   <receiver>file1</receiver>
    <slot>setChecked(bool)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>52</x>
-     <y>221</y>
+     <y>191</y>
     </hint>
     <hint type="destinationlabel">
      <x>87</x>
-     <y>222</y>
+     <y>190</y>
     </hint>
    </hints>
   </connection>
@@ -971,11 +1017,11 @@ border:none;
    <hints>
     <hint type="sourcelabel">
      <x>57</x>
-     <y>276</y>
+     <y>231</y>
     </hint>
     <hint type="destinationlabel">
-     <x>100</x>
-     <y>276</y>
+     <x>183</x>
+     <y>231</y>
     </hint>
    </hints>
   </connection>
@@ -987,11 +1033,11 @@ border:none;
    <hints>
     <hint type="sourcelabel">
      <x>57</x>
-     <y>380</y>
+     <y>271</y>
     </hint>
     <hint type="destinationlabel">
-     <x>96</x>
-     <y>378</y>
+     <x>180</x>
+     <y>271</y>
     </hint>
    </hints>
   </connection>
@@ -1003,11 +1049,11 @@ border:none;
    <hints>
     <hint type="sourcelabel">
      <x>57</x>
-     <y>837</y>
+     <y>714</y>
     </hint>
     <hint type="destinationlabel">
      <x>98</x>
-     <y>837</y>
+     <y>714</y>
     </hint>
    </hints>
   </connection>
@@ -1018,28 +1064,28 @@ border:none;
    <slot>setChecked(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>116</x>
-     <y>146</y>
+     <x>183</x>
+     <y>151</y>
     </hint>
     <hint type="destinationlabel">
      <x>57</x>
-     <y>166</y>
+     <y>151</y>
     </hint>
    </hints>
   </connection>
   <connection>
-   <sender>files1</sender>
+   <sender>file1</sender>
    <signal>toggled(bool)</signal>
-   <receiver>files</receiver>
+   <receiver>file</receiver>
    <slot>setChecked(bool)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>117</x>
-     <y>222</y>
+     <y>190</y>
     </hint>
     <hint type="destinationlabel">
      <x>57</x>
-     <y>221</y>
+     <y>191</y>
     </hint>
    </hints>
   </connection>
@@ -1050,12 +1096,12 @@ border:none;
    <slot>setChecked(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>119</x>
-     <y>276</y>
+     <x>183</x>
+     <y>231</y>
     </hint>
     <hint type="destinationlabel">
      <x>57</x>
-     <y>276</y>
+     <y>231</y>
     </hint>
    </hints>
   </connection>
@@ -1066,12 +1112,12 @@ border:none;
    <slot>setChecked(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>120</x>
-     <y>378</y>
+     <x>183</x>
+     <y>271</y>
     </hint>
     <hint type="destinationlabel">
      <x>57</x>
-     <y>386</y>
+     <y>271</y>
     </hint>
    </hints>
   </connection>
@@ -1083,11 +1129,11 @@ border:none;
    <hints>
     <hint type="sourcelabel">
      <x>107</x>
-     <y>837</y>
+     <y>714</y>
     </hint>
     <hint type="destinationlabel">
      <x>58</x>
-     <y>846</y>
+     <y>714</y>
     </hint>
    </hints>
   </connection>
@@ -1098,8 +1144,8 @@ border:none;
    <slot>setHidden(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>244</x>
-     <y>60</y>
+     <x>236</x>
+     <y>64</y>
     </hint>
     <hint type="destinationlabel">
      <x>67</x>
@@ -1114,12 +1160,12 @@ border:none;
    <slot>setVisible(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>246</x>
-     <y>60</y>
+     <x>236</x>
+     <y>64</y>
     </hint>
     <hint type="destinationlabel">
-     <x>201</x>
-     <y>356</y>
+     <x>184</x>
+     <y>378</y>
     </hint>
    </hints>
   </connection>
@@ -1131,11 +1177,11 @@ border:none;
    <hints>
     <hint type="sourcelabel">
      <x>29</x>
-     <y>823</y>
+     <y>714</y>
     </hint>
     <hint type="destinationlabel">
      <x>27</x>
-     <y>898</y>
+     <y>745</y>
     </hint>
    </hints>
   </connection>
@@ -1147,11 +1193,11 @@ border:none;
    <hints>
     <hint type="sourcelabel">
      <x>152</x>
-     <y>828</y>
+     <y>714</y>
     </hint>
     <hint type="destinationlabel">
      <x>148</x>
-     <y>920</y>
+     <y>745</y>
     </hint>
    </hints>
   </connection>
