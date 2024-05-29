@@ -1,14 +1,17 @@
 import sys
+import os
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5 import uic
+from PyQt5.QtCore import *
 # import res2_rc
 import requests
+import time
 
-from_class = uic.loadUiType('/home/hb/dev_ws/running/deep/project/Login/login.ui')[0] # 현복 login ui파일 
-sign_up_class = uic.loadUiType('/home/hb/dev_ws/running/deep/project/Login/signup.ui')[0] # 현복 Sign_up ui 파일
+from_class = uic.loadUiType('/home/ys/Downloads/login.ui')[0] # 현복 login ui파일 
+sign_up_class = uic.loadUiType('/home/ys/Downloads//signup.ui')[0] # 현복 Sign_up ui 파일
 
-total_gui_class = uic.loadUiType('/home/hb/dev_ws/running/deep/project/Login/Window.ui')[0] # 영수님 Main_ui파일
+total_gui_class = uic.loadUiType('/home/ys/Downloads/Window.ui')[0] # 영수님 Main_ui파일
 
 # Total GUI 화면 클래스 (영수님 mainwindow file 복붙 ㄱㄱ)
 class Total_gui_Window(QMainWindow, total_gui_class):
@@ -20,24 +23,29 @@ class Total_gui_Window(QMainWindow, total_gui_class):
         
         self.windows.clicked.connect(self.switch_to_windowPage)
         self.windows1.clicked.connect(self.switch_to_windowPage)
-        
-        self.files.clicked.connect(self.switch_to_filesPage)
-        self.files1.clicked.connect(self.switch_to_filesPage)
-        
+        self.file.clicked.connect(self.switch_to_filesPage)
+        self.file1.clicked.connect(self.switch_to_filesPage)
         self.details.clicked.connect(self.switch_to_detailsPage)
         self.details1.clicked.connect(self.switch_to_detailsPage)
-        
         self.set.clicked.connect(self.switch_to_settingsPage)
         self.set1.clicked.connect(self.switch_to_settingsPage)
         
+        self.upload.clicked.connect(self.upload_files)
+        self.analyze.clicked.connect(self.analyze_files)
+        
+        self.model1 = QStringListModel()
+        self.filelist.setModel(self.model1)
+        self.model2 = QStringListModel()
+        self.filelist1.setModel(self.model2)
+        
         self.model = QFileSystemModel()
-        self.model.setRootPath('')
-
+        self.model.setRootPath('home')
         self.fileTreeView.setModel(self.model)
-        self.fileTreeView.setRootIndex(self.model.index(''))
+        self.fileTreeView.setRootIndex(self.model.index('home'))
         self.fileTreeView.setColumnWidth(0, 250)
         
-        
+        self.files = []
+    
     def switch_to_windowPage(self):
         self.stackedWidget.setCurrentIndex(0)
         
@@ -49,7 +57,69 @@ class Total_gui_Window(QMainWindow, total_gui_class):
         
     def switch_to_settingsPage(self):
         self.stackedWidget.setCurrentIndex(4)
+    
+    def upload_files(self):
+        options = QFileDialog.Options()
+        options |= QFileDialog.DontUseNativeDialog
+        files, _ = QFileDialog.getOpenFileNames(self, "동영상 파일 선택", "", "동영상 파일 (*.mp4 *.avi *.mov *.mkv);;모든 파일 (*)", options=options)
+        if files:
+            self.files = files
+            self.model1.setStringList(files) 
+
+
+    def analyze_files(self):
+        if not self.files:
+            QMessageBox.warning(self, "Warning", "먼저 파일을 업로드하십시오.")
+            return
+
+        url = 'http://192.168.0.156:5000/api/video'  # 대상 PC의 IP 주소와 포트를 설정하십시오.
+        response_files = []
         
+        progress_dialog = QProgressDialog("파일 전송 중...", None, 0, len(self.files), self)
+        progress_dialog.setWindowTitle("전송 중")
+        progress_dialog.setWindowModality(Qt.WindowModal)
+        
+        for file_path in self.files:
+            try:
+                with open(file_path, 'rb') as f:
+                    files = {'file': (os.path.basename(file_path), f)}
+                    response = requests.post(url, files=files)
+                    if response.status_code == 200:
+                        response_files.append(os.path.basename(file_path))
+                    else:
+                        QMessageBox.warning(self, "Failed", f"{os.path.basename(file_path)} 파일 전송 실패: {response.status_code}")
+            except Exception as e:
+                QMessageBox.critical(self, "Error", f"파일 전송 중 오류 발생: {str(e)}")
+        
+        # # 서버로부터 파일이 처리된 후 다시 받기
+        # self.receive_processed_files(response_files) 파일 전체 업로드 후 순차적으로 분석해서 가져오기 그 후 마지막에 그래프로 나타내기
+
+    # def receive_processed_files(self, file_names):
+    #     # 서버에서 파일이 처리될 때까지 기다리는 동안 대기 (여기서는 단순히 10초 대기)
+    #     time.sleep(10)  # 실제로는 서버에서 완료를 알려주는 이벤트를 기다려야 함
+
+    #     url = 'http://192.168.0.126:9200//home/ys/Downloads/recd/'  # 처리된 파일을 받는 서버의 주소
+    #     processed_files = []
+
+    #     progress_dialog = QProgressDialog("파일 다운로드 중...", None, 0, len(file_names), self)
+    #     progress_dialog.setWindowTitle("다운로드 중")
+    #     progress_dialog.setWindowModality(Qt.WindowModal)
+        
+    #     for file_name in file_names:
+    #         try:
+    #             response = requests.get(f"{url}/{file_name}")
+    #             if response.status_code == 200:
+    #                 save_path = os.path.join("/path/to/save/processed/files", file_name)  # 처리된 파일을 저장할 경로 설정
+    #                 with open(save_path, 'wb') as f:
+    #                     f.write(response.content)
+    #                 processed_files.append(save_path)
+    #             else:
+    #                 QMessageBox.warning(self, "Failed", f"{file_name} 파일 다운로드 실패: {response.status_code}")
+    #         except Exception as e:
+    #             QMessageBox.critical(self, "Error", f"파일 다운로드 중 오류 발생: {str(e)}")
+
+    #     self.model2.setStringList(processed_files)  # 처리된 파일 목록을 QStringListModel에 설정하여 QListView에 표시
+
 
 
 
