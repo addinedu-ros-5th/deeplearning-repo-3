@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1271</width>
-    <height>858</height>
+    <height>880</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -321,24 +321,6 @@ Font-weight:bold;
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="file1">
-           <property name="text">
-            <string>Files</string>
-           </property>
-           <property name="icon">
-            <iconset>
-             <normaloff>:/image/folder_wh.png</normaloff>
-             <normalon>:/image/folder_wh.png</normalon>:/image/folder_wh.png</iconset>
-           </property>
-           <property name="checkable">
-            <bool>true</bool>
-           </property>
-           <property name="autoExclusive">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-         <item>
           <widget class="QPushButton" name="details1">
            <property name="text">
             <string>Details</string>
@@ -359,12 +341,30 @@ Font-weight:bold;
          <item>
           <widget class="QPushButton" name="set1">
            <property name="text">
-            <string>Settings</string>
+            <string>Compare</string>
            </property>
            <property name="icon">
             <iconset>
              <normaloff>:/image/settings_wh.png</normaloff>
              <normalon>:/image/settings_wh.png</normalon>:/image/settings_wh.png</iconset>
+           </property>
+           <property name="checkable">
+            <bool>true</bool>
+           </property>
+           <property name="autoExclusive">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="file1">
+           <property name="text">
+            <string>Files</string>
+           </property>
+           <property name="icon">
+            <iconset>
+             <normaloff>:/image/folder_wh.png</normaloff>
+             <normalon>:/image/folder_wh.png</normalon>:/image/folder_wh.png</iconset>
            </property>
            <property name="checkable">
             <bool>true</bool>
@@ -594,15 +594,15 @@ border:none;
           <widget class="QPushButton" name="upload">
            <property name="geometry">
             <rect>
-             <x>20</x>
-             <y>20</y>
-             <width>101</width>
-             <height>41</height>
+             <x>320</x>
+             <y>80</y>
+             <width>71</width>
+             <height>21</height>
             </rect>
            </property>
            <property name="font">
             <font>
-             <pointsize>16</pointsize>
+             <pointsize>11</pointsize>
             </font>
            </property>
            <property name="text">
@@ -614,23 +614,23 @@ border:none;
            </property>
            <property name="iconSize">
             <size>
-             <width>24</width>
-             <height>24</height>
+             <width>18</width>
+             <height>18</height>
             </size>
            </property>
           </widget>
           <widget class="QPushButton" name="analyze">
            <property name="geometry">
             <rect>
-             <x>150</x>
-             <y>20</y>
-             <width>121</width>
-             <height>41</height>
+             <x>220</x>
+             <y>80</y>
+             <width>91</width>
+             <height>21</height>
             </rect>
            </property>
            <property name="font">
             <font>
-             <pointsize>16</pointsize>
+             <pointsize>11</pointsize>
             </font>
            </property>
            <property name="text">
@@ -642,8 +642,8 @@ border:none;
            </property>
            <property name="iconSize">
             <size>
-             <width>24</width>
-             <height>24</height>
+             <width>18</width>
+             <height>18</height>
             </size>
            </property>
           </widget>
@@ -699,7 +699,7 @@ border:none;
            <property name="geometry">
             <rect>
              <x>20</x>
-             <y>70</y>
+             <y>80</y>
              <width>101</width>
              <height>17</height>
             </rect>
@@ -719,6 +719,47 @@ border:none;
            </property>
            <property name="text">
             <string>Receive Files</string>
+           </property>
+          </widget>
+          <widget class="QPushButton" name="upload1">
+           <property name="geometry">
+            <rect>
+             <x>320</x>
+             <y>270</y>
+             <width>71</width>
+             <height>20</height>
+            </rect>
+           </property>
+           <property name="font">
+            <font>
+             <pointsize>11</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>Upload</string>
+           </property>
+           <property name="icon">
+            <iconset>
+             <normaloff>:/image/upload.png</normaloff>:/image/upload.png</iconset>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>18</width>
+             <height>18</height>
+            </size>
+           </property>
+          </widget>
+          <widget class="QPushButton" name="show_graph">
+           <property name="geometry">
+            <rect>
+             <x>230</x>
+             <y>270</y>
+             <width>71</width>
+             <height>21</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Show</string>
            </property>
           </widget>
          </widget>
@@ -753,34 +794,13 @@ border:none;
           </widget>
          </widget>
          <widget class="QWidget" name="details_page">
-          <widget class="QLabel" name="label_6">
+          <widget class="QPushButton" name="Compare">
            <property name="geometry">
             <rect>
-             <x>30</x>
-             <y>490</y>
-             <width>341</width>
-             <height>251</height>
-            </rect>
-           </property>
-           <property name="font">
-            <font>
-             <pointsize>20</pointsize>
-            </font>
-           </property>
-           <property name="styleSheet">
-            <string notr="true">background-color: rgb(222, 221, 218);</string>
-           </property>
-           <property name="text">
-            <string>Video List</string>
-           </property>
-          </widget>
-          <widget class="QPushButton" name="pushButton_4">
-           <property name="geometry">
-            <rect>
-             <x>250</x>
-             <y>440</y>
+             <x>240</x>
+             <y>410</y>
              <width>121</width>
-             <height>41</height>
+             <height>31</height>
             </rect>
            </property>
            <property name="font">
@@ -789,7 +809,7 @@ border:none;
             </font>
            </property>
            <property name="text">
-            <string>export</string>
+            <string>Compare</string>
            </property>
            <property name="icon">
             <iconset>
@@ -802,30 +822,30 @@ border:none;
             </size>
            </property>
           </widget>
-          <widget class="QPushButton" name="pushButton_5">
+          <widget class="QPushButton" name="select">
            <property name="geometry">
             <rect>
-             <x>30</x>
-             <y>440</y>
-             <width>131</width>
-             <height>41</height>
+             <x>260</x>
+             <y>480</y>
+             <width>61</width>
+             <height>21</height>
             </rect>
            </property>
            <property name="font">
             <font>
-             <pointsize>14</pointsize>
+             <pointsize>11</pointsize>
             </font>
            </property>
            <property name="text">
-            <string>Video Select</string>
+            <string>Select</string>
            </property>
           </widget>
           <widget class="QSlider" name="horizontalSlider">
            <property name="geometry">
             <rect>
-             <x>20</x>
-             <y>400</y>
-             <width>961</width>
+             <x>70</x>
+             <y>360</y>
+             <width>911</width>
              <height>21</height>
             </rect>
            </property>
@@ -836,18 +856,18 @@ border:none;
           <widget class="QListView" name="listView">
            <property name="geometry">
             <rect>
-             <x>390</x>
-             <y>490</y>
-             <width>591</width>
-             <height>261</height>
+             <x>440</x>
+             <y>470</y>
+             <width>541</width>
+             <height>281</height>
             </rect>
            </property>
           </widget>
           <widget class="QLabel" name="label_9">
            <property name="geometry">
             <rect>
-             <x>390</x>
-             <y>460</y>
+             <x>440</x>
+             <y>440</y>
              <width>121</width>
              <height>17</height>
             </rect>
@@ -862,7 +882,7 @@ border:none;
              <x>20</x>
              <y>30</y>
              <width>961</width>
-             <height>361</height>
+             <height>321</height>
             </rect>
            </property>
            <layout class="QHBoxLayout" name="horizontalLayout_3">
@@ -912,6 +932,139 @@ border:none;
              </widget>
             </item>
            </layout>
+          </widget>
+          <widget class="QLabel" name="label_13">
+           <property name="geometry">
+            <rect>
+             <x>30</x>
+             <y>470</y>
+             <width>111</width>
+             <height>17</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Original videos</string>
+           </property>
+          </widget>
+          <widget class="QLabel" name="label_14">
+           <property name="geometry">
+            <rect>
+             <x>30</x>
+             <y>620</y>
+             <width>111</width>
+             <height>17</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Analyze videos</string>
+           </property>
+          </widget>
+          <widget class="QListView" name="d_filelist">
+           <property name="geometry">
+            <rect>
+             <x>20</x>
+             <y>500</y>
+             <width>381</width>
+             <height>111</height>
+            </rect>
+           </property>
+          </widget>
+          <widget class="QListView" name="d_filelist1">
+           <property name="geometry">
+            <rect>
+             <x>20</x>
+             <y>640</y>
+             <width>381</width>
+             <height>111</height>
+            </rect>
+           </property>
+          </widget>
+          <widget class="QPushButton" name="d_upload">
+           <property name="geometry">
+            <rect>
+             <x>330</x>
+             <y>480</y>
+             <width>71</width>
+             <height>21</height>
+            </rect>
+           </property>
+           <property name="font">
+            <font>
+             <pointsize>11</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>Upload</string>
+           </property>
+           <property name="icon">
+            <iconset>
+             <normaloff>:/image/upload.png</normaloff>:/image/upload.png</iconset>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>18</width>
+             <height>18</height>
+            </size>
+           </property>
+          </widget>
+          <widget class="QPushButton" name="d_upload1">
+           <property name="geometry">
+            <rect>
+             <x>330</x>
+             <y>620</y>
+             <width>71</width>
+             <height>21</height>
+            </rect>
+           </property>
+           <property name="font">
+            <font>
+             <pointsize>11</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>Upload</string>
+           </property>
+           <property name="icon">
+            <iconset>
+             <normaloff>:/image/upload.png</normaloff>:/image/upload.png</iconset>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>18</width>
+             <height>18</height>
+            </size>
+           </property>
+          </widget>
+          <widget class="QPushButton" name="select1">
+           <property name="geometry">
+            <rect>
+             <x>260</x>
+             <y>620</y>
+             <width>61</width>
+             <height>21</height>
+            </rect>
+           </property>
+           <property name="font">
+            <font>
+             <pointsize>11</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>Select</string>
+           </property>
+          </widget>
+          <widget class="QPushButton" name="playbtn">
+           <property name="geometry">
+            <rect>
+             <x>20</x>
+             <y>360</y>
+             <width>41</width>
+             <height>25</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Play</string>
+           </property>
           </widget>
          </widget>
          <widget class="QWidget" name="notifications_page">
