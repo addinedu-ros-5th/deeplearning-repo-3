@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
 import mysql.connector
 from flask_cors import CORS
+import base64
 
 app = Flask(__name__)
 CORS(app)
@@ -17,6 +18,7 @@ def signup():
     data = request.get_json()
     id = data.get('user_id')
     password = data.get('user_password')
+    hash_password = base64.b64encode(password.encode('utf-8')).decode('utf-8')
     name = data.get('user_name')
     birthday = data.get('user_birthday')
     # 데이터베이스에서 사용자가 이미 존재하는지 확인
@@ -28,7 +30,7 @@ def signup():
         return jsonify({'error': 'Username already exists'}), 400
     
     # 새로운 사용자 생성
-    cursor.execute("INSERT INTO member (Birthday, Name, ID, Password) VALUES (%s, %s, %s, %s)", (birthday, name, id, password))
+    cursor.execute("INSERT INTO member (Birthday, Name, ID, Password) VALUES (%s, %s, %s, %s)", (birthday, name, id, hash_password))
     db.commit()
     return jsonify({'message': '회원가입 완료'}), 201
 
@@ -38,8 +40,9 @@ def signin():
 
     id = data.get('user_id')
     password = data.get('user_password')
+    hash_password = base64.b64encode(password.encode('utf-8')).decode('utf-8')
     cursor = db.cursor()
-    cursor.execute("SELECT * FROM member WHERE ID = %s AND Password = %s", (id, password))
+    cursor.execute("SELECT * FROM member WHERE ID = %s AND Password = %s", (id, hash_password))
     user = cursor.fetchone()
     if user:
         return jsonify({'message': '로그인 완료'}), 201
