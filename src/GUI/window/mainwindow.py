@@ -2,9 +2,8 @@ import sys
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5 import uic
-import resources_rc
 
-from_class = uic.loadUiType("Window.ui")[0]
+from_class = uic.loadUiType("/home/ys/dev_ws/deep-repo-3/source/gui/Window.ui")[0]
 
 
 class WindowClass(QMainWindow, from_class) :
