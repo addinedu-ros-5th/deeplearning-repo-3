@@ -1,0 +1,6 @@
+file: ./tmp/txt/out4_noline.txt
+tp: 3029 fp: 5592 fn: 10992
+precision: 0.351351
+recall: 0.216033
+Fmeasure: 0.267556
+
