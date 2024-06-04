@@ -16,7 +16,7 @@ db = mysql.connector.connect(
     database="Driving"
 )
 ##--------------------
-UPLOAD_FOLDER = 'uploads'
+UPLOAD_FOLDER = '/home/addinedu/dev_ws/src/video'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 # Load the YOLOv8 model
@@ -24,21 +24,29 @@ model = YOLO('/home/addinedu/dev_ws/src/YOLO/yolov8n.pt')
 
 @app.route('/api/upload', methods=['POST'])
 def upload_video():
-    if 'video' not in request.files:
-        return jsonify({'error': 'No video file provided'}), 400
+    if 'videos' not in request.files:
+        return jsonify({'error': 'No video files provided'}), 400
 
-    file = request.files['video']
-    if file.filename == '':
-        return jsonify({'error': 'No selected file'}), 400
+    videos = request.files.getlist('videos')
+    if not videos:
+        return jsonify({'error': 'No selected files'}), 400
 
-    filename = secure_filename(file.filename)
-    filepath = os.path.join(UPLOAD_FOLDER, filename)
-    file.save(filepath)
+    # List to store processed video paths
+    processed_videos = []
 
-    # Process the video and save the annotated video
-    process_video(filepath)
+    for video in videos:
+        if video.filename == '':
+            continue
 
-    return jsonify({'message': 'File uploaded and processed successfully'}), 201
+        filename = secure_filename(video.filename)
+        filepath = os.path.join(UPLOAD_FOLDER, filename)
+        video.save(filepath)
+
+        # Process the video and save the annotated video
+        processed_video_path = process_video(filepath)
+        processed_videos.append(processed_video_path)
+
+    return jsonify({'message': 'Files uploaded and processed successfully', 'processed_videos': processed_videos}), 201
 
 def process_video(video_path):
     cap = cv2.VideoCapture(video_path)
@@ -51,7 +59,7 @@ def process_video(video_path):
     frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
     # Define the codec and create VideoWriter object
-    out = cv2.VideoWriter('annotated_video.mp4', cv2.VideoWriter_fourcc(*'mp4v'), 30, (frame_width, frame_height))
+    out = cv2.VideoWriter('annotated_' + os.path.basename(video_path), cv2.VideoWriter_fourcc(*'mp4v'), 30, (frame_width, frame_height))
 
     while cap.isOpened():
         success, frame = cap.read()
@@ -62,7 +70,7 @@ def process_video(video_path):
         results = model.track(frame, persist=True)
         annotated_frame = results[0].plot()
 
-        # Write the annotated frame to the output videoannotated_video.mp4
+        # Write the annotated frame to the output video
         out.write(annotated_frame)
 
     # Release everything when job is finished
@@ -70,9 +78,11 @@ def process_video(video_path):
     out.release()
     cv2.destroyAllWindows()
 
-@app.route('/api/download', methods=['GET'])
-def download_video():
-    video_path = '/home/addinedu/dev_ws/src/annotated_video.mp4'
+    return 'annotated_' + os.path.basename(video_path)
+
+@app.route('/api/download/<video_name>', methods=['GET'])
+def download_video(video_name):
+    video_path = os.path.join(UPLOAD_FOLDER, video_name)
     return send_file(video_path, as_attachment=True), 201
 
 ##-------------------------------
