@@ -4,17 +4,17 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5 import uic
 from PyQt5.QtCore import *
-from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
-from PyQt5.QtMultimediaWidgets import QVideoWidget
 import requests
+import res_rc
+import video
 import time
 import tkinter as tk
 
 
-from_class = uic.loadUiType('/home/hb/dev_ws/running/deep/project/Total/login.ui')[0] # 현복 login ui파일 
-sign_up_class = uic.loadUiType('/home/hb/dev_ws/running/deep/project/Total/signup.ui')[0] # 현복 Sign_up ui 파일
+from_class = uic.loadUiType('/home/ys/Downloads/zDeepgui_rev1/login.ui')[0] # 현복 login ui파일 
+sign_up_class = uic.loadUiType('/home/ys/Downloads/zDeepgui_rev1/signup.ui')[0] # 현복 Sign_up ui 파일
 
-total_gui_class = uic.loadUiType('/home/hb/dev_ws/running/deep/project/Total/Window.ui')[0] # 영수님 Main_ui파일
+total_gui_class = uic.loadUiType('/home/ys/Downloads/zDeepgui_rev1/Window.ui')[0] # 영수님 Main_ui파일
 
 # 실시간 데이터 전송 업데이트 Class
 class FileUploadThread(QThread):
@@ -60,150 +60,180 @@ class Total_gui_Window(QMainWindow, total_gui_class):
         
         self.setWindowTitle("Main Window") 
         
-        self.analyze.clicked.connect(self.analyze_files)
-        
-        
-
-        
         # 메뉴용 버튼
         self.windows.clicked.connect(self.switch_to_windowPage)
         self.windows1.clicked.connect(self.switch_to_windowPage)
-        self.file.clicked.connect(self.switch_to_filesPage)
-        self.file1.clicked.connect(self.switch_to_filesPage)
-        self.details.clicked.connect(self.switch_to_detailsPage)
-        self.details1.clicked.connect(self.switch_to_detailsPage)
-        self.set.clicked.connect(self.switch_to_settingsPage)
-        self.set1.clicked.connect(self.switch_to_settingsPage)
+        # self.details.clicked.connect(self.switch_to_detailsPage)
+        # self.details1.clicked.connect(self.switch_to_detailsPage)
+        # self.set.clicked.connect(self.switch_to_settingsPage)
+        # self.set1.clicked.connect(self.switch_to_settingsPage)
+        self.sign1.clicked.connect(self.switch_login) # Logout 버튼
+        self.sign.clicked.connect(self.switch_login) # Logout 버튼
+        self.icon_widget.setHidden(True)
         
         # 윈도우창 내 버튼용
         self.upload.clicked.connect(self.upload_files)
-        self.upload1.clicked.connect(self.upload_files1)
-        self.sign1.clicked.connect(self.switch_login) # Logout 버튼
-        self.sign.clicked.connect(self.switch_login) # Logout 버튼
-        self.details_2.clicked.connect(self.switch_detail) # detail page 전환
-        # self.analyze.clicked.connect(self.analyze_files)
-        # self.show_graph.clicked.connect(self.show_files)
-        
-        self.model1 = QStringListModel()
-        self.filelist.setModel(self.model1)
-        self.model2 = QStringListModel()
-        self.filelist1.setModel(self.model2)
-        
-        self.files = []
-        self.files1 = []
-        
-        # files창 용 
-        self.model = QFileSystemModel()
-        self.model.setRootPath('home')
-        self.fileTreeView.setModel(self.model)
-        self.fileTreeView.setRootIndex(self.model.index('home'))
-        self.fileTreeView.setColumnWidth(0, 250)
-        
-        # details창 용
-        self.d_upload.clicked.connect(self.d_upload_files)
-        self.d_upload1.clicked.connect(self.d_upload_files1)
-        self.select.clicked.connect(self.load_videos)
-        self.select1.clicked.connect(self.load_videos1)
-        self.playbtn.clicked.connect(self.toggle_playback)
-        
-        self.d_model1 = QStringListModel()
-        self.d_filelist.setModel(self.d_model1)
-        self.d_model2 = QStringListModel()
-        self.d_filelist1.setModel(self.d_model2)
-        
-        self.d_files = []
-        self.d_files1 = []
-        
-        # self.video_player = QMediaPlayer(None, QMediaPlayer.VideoSurface)
-        # self.video_widget = QVideoWidget(self)
-        # self.video_layout.addWidget(self.video_widget)  # Assume video_layout is the layout where QLabel is added
-        # self.video_player.setVideoOutput(self.video_widget)
-        
-        # QVideoWidget 설정
-        self.video_player = QMediaPlayer(None, QMediaPlayer.VideoSurface)
-        self.video_widget = QVideoWidget(self)
+        self.analyze.clicked.connect(self.analyze_files)
+        self.delbtn.clicked.connect(self.delete_selected_rows)
+        self.search.clicked.connect(self.serach_from_table)
+        self.searchbar.setPlaceholderText("Enter text to search")
 
-        # QLabel (label_4)를 QVideoWidget으로 대체
-        self.label_4 = QVBoxLayout(self.label_4)
-        self.video_player.setVideoOutput(self.video_widget)
-    
+        self.tableWidget.setColumnCount(4)
+        self.tableWidget.setHorizontalHeaderLabels(['선택', '파일경로', '파일 이름', '상태'])
+        self.tableWidget.cellClicked.connect(self.toggle_checkbox)
+        self.tableWidget.horizontalHeader().setSectionResizeMode(2, QHeaderView.Stretch)
+        header = self.tableWidget.horizontalHeader()
+        header.setSectionResizeMode(0, QHeaderView.ResizeToContents)
+        self.tableWidget.setColumnHidden(1, True)  # 파일 경로 열 숨기기
+        
+        self.tableWidget.cellClicked.connect(self.cell_was_clicked)
+        
+        self.tableWidget1.setColumnCount(6)
+        self.tableWidget1.setHorizontalHeaderLabels(['파일경로', 'Video ID', 'Speed', 'Pedestrian', 'Traffic', 'Fail Num'])
+        self.tableWidget1.cellClicked.connect(self.cell_was_clicked)
+        self.tableWidget1.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self.tableWidget1.setColumnHidden(0, True)  # 파일 경로 열 숨기기
+        
     #메뉴 배너용 창 전환 설정
     def switch_to_windowPage(self):
         self.stackedWidget.setCurrentIndex(0)
         
-    def switch_to_filesPage(self):
-        self.stackedWidget.setCurrentIndex(1)
+    # def switch_to_detailsPage(self):
+    #     self.stackedWidget.setCurrentIndex(1)
         
-    def switch_to_detailsPage(self):
-        self.stackedWidget.setCurrentIndex(2)
-        
-    def switch_to_settingsPage(self):
-        self.stackedWidget.setCurrentIndex(4)
+    # def switch_to_settingsPage(self):
+    #     self.stackedWidget.setCurrentIndex(2)
     
     #윈도우창의 uplaod 버튼용
     def upload_files(self):
         options = QFileDialog.Options()
-        options |= QFileDialog.DontUseNativeDialog
-        files, _ = QFileDialog.getOpenFileNames(self, "동영상 파일 선택", "", "동영상 파일 (*.mp4 *.avi *.mov *.mkv);;모든 파일 (*)", options=options)
+        files, _ = QFileDialog.getOpenFileNames(self, "파일 선택", "", "비디오 파일 (*.mp4 *.avi *.mov *.mkv);;모든 파일 (*)", options=options)
         if files:
-            self.files = files
-            self.model1.setStringList(files) 
-            
-    def upload_files1(self):
-        options = QFileDialog.Options()
-        options |= QFileDialog.DontUseNativeDialog
-        files, _ = QFileDialog.getOpenFileNames(self, "동영상 파일 선택", "", "동영상 파일 (*.mp4 *.avi *.mov *.mkv);;모든 파일 (*)", options=options)
-        if files:
-            self.files1 = files
-            self.model2.setStringList(files) 
+            for file in files:
+                file_name = os.path.basename(file)  # 파일 이름 추출
+                file_path = file
+                # 이미 존재하는 파일인지 확인
+                for row in range(self.tableWidget.rowCount()):
+                    existing_file_name = self.tableWidget.item(row, 2).text()
+                    if file_name == existing_file_name:
+                        reply = QMessageBox.question(self, '경고', f"'{file_name}' 파일은 이미 존재합니다.", 
+                                                     QMessageBox.Yes)
+                        if reply == QMessageBox.Yes:
+                            self.upload_files()  # 파일 탐색기 대화 상자 다시 열기
+                        return
+                else:  # 이미 존재하지 않는 파일인 경우에만 테이블 위젯에 추가
+                    row_position = self.tableWidget.rowCount()
+                    self.tableWidget.insertRow(row_position)
+                    self.tableWidget.setItem(row_position, 2, QTableWidgetItem(file_name))
+                    self.tableWidget.setItem(row_position, 1, QTableWidgetItem(file_path))  # 파일 경로 추가
+                
+                # 체크 박스 설정
+                checkbox_widget = QWidget()
+                checkbox = QCheckBox()
+                checkbox.setEnabled(False)  # 사용자가 선택할 수 없도록 설정
+                checkbox.setChecked(False)
+                checkbox_layout = QHBoxLayout(checkbox_widget)
+                checkbox_layout.addWidget(checkbox)
+                checkbox_layout.setAlignment(Qt.AlignCenter)  # 가운데 정렬 설정
+                checkbox_layout.setContentsMargins(0, 0, 0, 0)
+                self.tableWidget.setCellWidget(row_position, 0, checkbox_widget)
     
-    #details창의 upload 버튼용
-    def d_upload_files(self):
-        options = QFileDialog.Options()
-        options |= QFileDialog.DontUseNativeDialog
-        files, _ = QFileDialog.getOpenFileNames(self, "동영상 파일 선택", "", "동영상 파일 (*.mp4 *.avi *.mov *.mkv);;모든 파일 (*)", options=options)
-        if files:
-            self.d_files = files
-            self.d_model1.setStringList(files) 
-            
-    def d_upload_files1(self):
-        options = QFileDialog.Options()
-        options |= QFileDialog.DontUseNativeDialog
-        files, _ = QFileDialog.getOpenFileNames(self, "동영상 파일 선택", "", "동영상 파일 (*.mp4 *.avi *.mov *.mkv);;모든 파일 (*)", options=options)
-        if files:
-            self.d_files1 = files
-            self.d_model2.setStringList(files) 
-
-    #details창의 select 버튼용 (동영상 append 및 재생버튼)
+    def delete_selected_rows(self):
+        rows_to_delete = []
+        for row in range(self.tableWidget.rowCount()):
+            checkbox_widget = self.tableWidget.cellWidget(row, 0)
+            checkbox = checkbox_widget.findChild(QCheckBox)
+            if checkbox.isChecked():
+                rows_to_delete.append(row)
+        for row in reversed(rows_to_delete):  # 역순으로 삭제하여 인덱스 문제 방지
+            self.tableWidget.removeRow(row)
+                
+    def toggle_checkbox(self, row, column):
+        if column == 2:  # 파일 경로 열 클릭 시 체크박스 토글
+            checkbox_widget = self.tableWidget.cellWidget(row, 0)
+            checkbox = checkbox_widget.findChild(QCheckBox)
+            checkbox.setChecked(not checkbox.isChecked())
     
-    def load_videos(self):
-        selected_indexes = self.d_filelist.selectedIndexes()
-        if selected_indexes:
-            selected_file = self.d_files[selected_indexes[0].row()]
-            self.video_player.setMedia(QMediaContent(QUrl.fromLocalFile(selected_file)))
-            self.append_video_to_label(selected_file)
-            
-    def load_videos1(self):
-        selected_indexes = self.d_filelist1.selectedIndexes()
-        if selected_indexes:
-            selected_file = self.d_files1[selected_indexes[0].row()]
-            self.video_player.setMedia(QMediaContent(QUrl.fromLocalFile(selected_file)))
-            self.append_video_to_label(selected_file)
-    
-    def append_video_to_label(self, video_path):
-        current_text = self.label_4.text()
-        new_text = current_text + '\n' + video_path if current_text else video_path
-        self.label_4.setText(new_text)
-            
-    def toggle_playback(self):
-        if self.video_player.state() == QMediaPlayer.PlayingState:
-            self.video_player.pause()
+    def serach_from_table(self):
+        search_text = self.searchbar.text()
+        if search_text == "":
+            for row in range(self.tableWidget.rowCount()):
+                self.tableWidget.setRowHidden(row, False)
         else:
-            self.video_player.play()
+            for row in range(self.tableWidget.rowCount()):
+                file_name = self.tableWidget.item(row, 2).text()
+                if search_text.lower() in file_name.lower():
+                    self.tableWidget.setRowHidden(row, False)
+                else:
+                    self.tableWidget.setRowHidden(row, True)
+            
+    def analyze_files(self):
+        row_count = self.tableWidget.rowCount()
+        if row_count == 0:
+            QMessageBox.warning(self, "경고", "분석할 파일이 없습니다.")
+            return
+
+        files_to_analyze = []
+        for row in range(self.tableWidget.rowCount()):
+            file_path = self.tableWidget.item(row, 1).text()
+            # file_name = self.tableWidget.item(row, 2).text()
+            files_to_analyze.append(file_path)
+
+        # 진행 바 창 설정
+        self.progress_dialog = QProgressDialog("Analyzing files...", "Cancel", 0, len(files_to_analyze), self)
+        self.progress_dialog.setWindowModality(Qt.WindowModal)
+        self.progress_dialog.setValue(0)
+
+        url = 'http://192.168.0.126:5000/api/upload'
+        self.thread = FileUploadThread(files_to_analyze, url)
+        self.thread.update_progress.connect(self.update_progress)
+        #self.thread.finished.connect(self.on_finished)
+        self.thread.error.connect(self.on_error)
+        self.thread.start()
+        self.progress_dialog.canceled.connect(self.cancel_analysis)
+
+    def update_progress(self, value):
+        self.progress_dialog.setValue(value)
+        if value == self.tableWidget.rowCount():
+            self.progress_dialog.close()
+            QMessageBox.information(self, "완료", "모든 파일 분석이 완료되었습니다.")
+            
+    # def on_finished(self, response_files):
+    #     self.progress_dialog.close()
+    #     QMessageBox.information(self, "Success", "파일 전송이 완료되었습니다.")
+    #     # response_files를 처리하는 코드를 여기에 작성하십시오.
+
+    def on_error(self, error_message):
+        self.progress_dialog.close()
+        QMessageBox.critical(self, "Error", error_message)
+
+    def cancel_analysis(self):
+        self.thread.terminate()
+        self.progress_dialog.close()  # 진행 바 창 닫기
+
+    def update_table_status(self, value, file_name, status):
+        for row in range(self.tableWidget.rowCount()):
+            if self.tableWidget.item(row, 2).text() == file_name:
+                self.tableWidget.setItem(row, 3, QTableWidgetItem(status))
+                break
+        self.update_progress(value)
     
-    # Detail 화면 전환
-    def switch_detail(self):
-        self.stackedWidget.setCurrentIndex(2)
+    #분석 테이블에서 특정 셀 클릭 시 비디오창이 열리게 하는 코드    
+    def cell_was_clicked(self, row, column):
+        # 3번째 열 (index 2) 클릭 시 다른 UI 파일 열기
+        if column == 3:
+            self.open_video_ui()
+            
+    # def open_video_ui(self):
+    #     self.other_window = video.VideoPlayer()
+    #     self.other_window.show()
+
+        # Total gui 화면 창 전환 (로그인 완료)
+    def open_total_gui_window(self):
+        self.total_gui_window = Total_gui_Window()
+        self.total_gui_window.show()
+        self.close()
+    
     # Logout 기능
     def switch_login(self):
         reply = QMessageBox.question(self, 'Message', '로그인 화면으로 돌아가시겠습니까?',
@@ -214,38 +244,35 @@ class Total_gui_Window(QMainWindow, total_gui_class):
             pass
     
 
-    # def show_files(self):
-    #     sdlkfjasld
-        
 #--------------------------------------------------------------------------------------------------------------------------------
-    def analyze_files(self):
-        if not self.files:
-            QMessageBox.warning(self, "Warning", "먼저 파일을 업로드하십시오.")
-            return
+    # def analyze_files(self):
+    #     if not self.files:
+    #         QMessageBox.warning(self, "Warning", "먼저 파일을 업로드하십시오.")
+    #         return
 
-        url = 'http://192.168.0.156:5000/api/upload'
-        self.progress_dialog = QProgressDialog("파일 전송 중...", None, 0, 100, self)
-        self.progress_dialog.setWindowTitle("전송 중")
-        self.progress_dialog.setWindowModality(Qt.WindowModal)
-        self.progress_dialog.show()
+    #     url = 'http://192.168.0.156:5000/api/upload'
+    #     self.progress_dialog = QProgressDialog("파일 전송 중...", None, 0, 100, self)
+    #     self.progress_dialog.setWindowTitle("전송 중")
+    #     self.progress_dialog.setWindowModality(Qt.WindowModal)
+    #     self.progress_dialog.show()
 
-        self.thread = FileUploadThread(self.files, url)
-        self.thread.update_progress.connect(self.update_progress)
-        self.thread.finished.connect(self.on_finished)
-        self.thread.error.connect(self.on_error)
-        self.thread.start()
+    #     self.thread = FileUploadThread(self.files, url)
+    #     self.thread.update_progress.connect(self.update_progress)
+    #     self.thread.finished.connect(self.on_finished)
+    #     self.thread.error.connect(self.on_error)
+    #     self.thread.start()
 
-    def update_progress(self, progress):
-        self.progress_dialog.setValue(progress)
+    # def update_progress(self, progress):
+    #     self.progress_dialog.setValue(progress)
 
-    def on_finished(self, response_files):
-        self.progress_dialog.close()
-        QMessageBox.information(self, "Success", "파일 전송이 완료되었습니다.")
-        # response_files를 처리하는 코드를 여기에 작성하십시오.
+    # def on_finished(self, response_files):
+    #     self.progress_dialog.close()
+    #     QMessageBox.information(self, "Success", "파일 전송이 완료되었습니다.")
+    #     # response_files를 처리하는 코드를 여기에 작성하십시오.
 
-    def on_error(self, error_message):
-        self.progress_dialog.close()
-        QMessageBox.critical(self, "Error", error_message)
+    # def on_error(self, error_message):
+    #     self.progress_dialog.close()
+    #     QMessageBox.critical(self, "Error", error_message)
 
 
 
@@ -387,7 +414,6 @@ class WindowClass(QMainWindow, from_class) :
         self.total_gui_window.show()
         self.close()
     
-        
        
 if __name__ == "__main__":
     app = QApplication(sys.argv) 
