@@ -1,20 +1,22 @@
 import sys
 import os
+import cv2
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5 import uic
 from PyQt5.QtCore import *
-import requests
 import res_rc
 import video
-import time
 import tkinter as tk
+import requests
+import time
 
 
-from_class = uic.loadUiType('/home/ys/Downloads/zDeepgui_rev1/login.ui')[0] # 현복 login ui파일 
-sign_up_class = uic.loadUiType('/home/ys/Downloads/zDeepgui_rev1/signup.ui')[0] # 현복 Sign_up ui 파일
+from_class = uic.loadUiType('login.ui')[0] # 현복님 login ui파일 
+sign_up_class = uic.loadUiType('signup.ui')[0] # 현복님 Sign_up ui 파일
 
-total_gui_class = uic.loadUiType('/home/ys/Downloads/zDeepgui_rev1/Window.ui')[0] # 영수님 Main_ui파일
+total_gui_class = uic.loadUiType('Window.ui')[0] # 영수님 Main_ui파일
+video_class = uic.loadUiType('video.ui')[0] # 영수님 video_ui파일
 
 # 실시간 데이터 전송 업데이트 Class
 class FileUploadThread(QThread):
@@ -49,10 +51,120 @@ class FileUploadThread(QThread):
             return
 
         self.finished.emit(response_files)
+        
+class VideoPlayer(QMainWindow, video_class):
+    def __init__(self):
+        super(VideoPlayer, self).__init__()
+        self.setupUi(self)
+        
+        self.setWindowTitle("Visual Resualt") 
+        
+        self.video_path = '40km-h_.mp4'
+        self.cap = cv2.VideoCapture(self.video_path)
+        self.cap = None
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.next_frame)
+        self.frame_position = 0
+        self.playing = False
+        self.memo_file_name = None  # 메모 파일 경로
 
+        self.btn_play.clicked.connect(self.play_pause)
+        self.btn_stop.clicked.connect(self.stop)
+        self.btn_forward.clicked.connect(self.forward)
+        self.btn_prev.clicked.connect(self.prev)
+        self.bar.sliderMoved.connect(self.set_position)
+        self.Save.clicked.connect(self.save_memo)
 
+        self.load_video(self.video_path)
 
-# Total GUI 화면 클래스 (영수님 mainwindow file 복붙 ㄱㄱ)
+    def load_video(self, video_path):
+        self.cap = cv2.VideoCapture(video_path)
+        self.bar.setMaximum(int(self.cap.get(cv2.CAP_PROP_FRAME_COUNT)))
+
+    def play_pause(self):
+        if self.playing:
+            self.timer.stop()
+        else:
+            self.timer.start(30)
+        self.playing = not self.playing
+
+    def stop(self):
+        self.timer.stop()
+        self.cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
+        self.frame_position = 0
+        self.bar.setValue(0)
+        self.playing = False
+
+    def forward(self):
+        self.frame_position += 10 * int(self.cap.get(cv2.CAP_PROP_FPS))
+        self.cap.set(cv2.CAP_PROP_POS_FRAMES, self.frame_position)
+
+    def prev(self):
+        self.frame_position -= 10 * int(self.cap.get(cv2.CAP_PROP_FPS))
+        if self.frame_position < 0:
+            self.frame_position = 0
+        self.cap.set(cv2.CAP_PROP_POS_FRAMES, self.frame_position)
+
+    def set_position(self, position):
+        self.frame_position = position
+        self.cap.set(cv2.CAP_PROP_POS_FRAMES, self.frame_position)
+
+    def next_frame(self):
+        ret, frame = self.cap.read()
+        if ret:
+            self.frame_position += 1
+            self.bar.setValue(self.frame_position)
+            
+            # Convert the frame to RGB format
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            
+            # Resize the frame while keeping the aspect ratio
+            h, w, ch = frame.shape
+            label_height, label_width = self.view.height(), self.view.width()
+            aspect_ratio = w / h
+            if label_width / aspect_ratio <= label_height:
+                new_width = label_width
+                new_height = int(label_width / aspect_ratio)
+            else:
+                new_height = label_height
+                new_width = int(label_height * aspect_ratio)
+            
+            resized_frame = cv2.resize(frame, (new_width, new_height), interpolation=cv2.INTER_AREA)
+            
+            # Create a QImage and set it to the QLabel
+            bytes_per_line = ch * new_width
+            qt_image = QImage(resized_frame.data, new_width, new_height, bytes_per_line, QImage.Format_RGB888)
+            self.view.setPixmap(QPixmap.fromImage(qt_image).scaled(self.view.size(), Qt.KeepAspectRatio))
+
+            # Update time label
+            total_frames = self.cap.get(cv2.CAP_PROP_FRAME_COUNT)
+            fps = self.cap.get(cv2.CAP_PROP_FPS)
+            current_time = QTime(0, 0).addSecs(int(self.frame_position / fps))
+            total_time = QTime(0, 0).addSecs(int(total_frames / fps))
+            self.time.setText(f'{current_time.toString("mm:ss")} / {total_time.toString("mm:ss")}')
+        else:
+            self.stop()
+
+    def save_memo(self):
+        if self.memo_file_name:
+            try:
+                with open(self.memo_file_name, 'w') as file:
+                    memo_text = self.memotext.toPlainText()
+                    file.write(memo_text)
+                QMessageBox.information(self, "Success", "Memo saved successfully.")
+            except Exception as e:
+                QMessageBox.critical(self, "Error", f"An error occurred while saving the memo: {str(e)}")
+        else:
+            options = QFileDialog.Options()
+            options |= QFileDialog.DontUseNativeDialog
+            file_name, _ = QFileDialog.getSaveFileName(self, "Save Memo", "", "Text Files (*.txt);;All Files (*)", options=options)
+            if file_name:
+                memo_text = self.memotext.toPlainText()
+                with open(file_name, 'w') as file:
+                    file.write(memo_text)
+                self.memo_file_name = file_name  # 새로 저장된 파일 경로 저장
+
+# Total GUI 화면 클래스 (영수님 mainwindow)
 class Total_gui_Window(QMainWindow, total_gui_class):
     def __init__(self):
         super().__init__()
@@ -63,10 +175,6 @@ class Total_gui_Window(QMainWindow, total_gui_class):
         # 메뉴용 버튼
         self.windows.clicked.connect(self.switch_to_windowPage)
         self.windows1.clicked.connect(self.switch_to_windowPage)
-        # self.details.clicked.connect(self.switch_to_detailsPage)
-        # self.details1.clicked.connect(self.switch_to_detailsPage)
-        # self.set.clicked.connect(self.switch_to_settingsPage)
-        # self.set1.clicked.connect(self.switch_to_settingsPage)
         self.sign1.clicked.connect(self.switch_login) # Logout 버튼
         self.sign.clicked.connect(self.switch_login) # Logout 버튼
         self.icon_widget.setHidden(True)
@@ -97,14 +205,8 @@ class Total_gui_Window(QMainWindow, total_gui_class):
     #메뉴 배너용 창 전환 설정
     def switch_to_windowPage(self):
         self.stackedWidget.setCurrentIndex(0)
-        
-    # def switch_to_detailsPage(self):
-    #     self.stackedWidget.setCurrentIndex(1)
-        
-    # def switch_to_settingsPage(self):
-    #     self.stackedWidget.setCurrentIndex(2)
     
-    #윈도우창의 uplaod 버튼용
+    #메인창 기능 구현
     def upload_files(self):
         options = QFileDialog.Options()
         files, _ = QFileDialog.getOpenFileNames(self, "파일 선택", "", "비디오 파일 (*.mp4 *.avi *.mov *.mkv);;모든 파일 (*)", options=options)
@@ -176,7 +278,6 @@ class Total_gui_Window(QMainWindow, total_gui_class):
         files_to_analyze = []
         for row in range(self.tableWidget.rowCount()):
             file_path = self.tableWidget.item(row, 1).text()
-            # file_name = self.tableWidget.item(row, 2).text()
             files_to_analyze.append(file_path)
 
         # 진행 바 창 설정
@@ -197,11 +298,6 @@ class Total_gui_Window(QMainWindow, total_gui_class):
         if value == self.tableWidget.rowCount():
             self.progress_dialog.close()
             QMessageBox.information(self, "완료", "모든 파일 분석이 완료되었습니다.")
-            
-    # def on_finished(self, response_files):
-    #     self.progress_dialog.close()
-    #     QMessageBox.information(self, "Success", "파일 전송이 완료되었습니다.")
-    #     # response_files를 처리하는 코드를 여기에 작성하십시오.
 
     def on_error(self, error_message):
         self.progress_dialog.close()
@@ -224,16 +320,16 @@ class Total_gui_Window(QMainWindow, total_gui_class):
         if column == 3:
             self.open_video_ui()
             
-    # def open_video_ui(self):
-    #     self.other_window = video.VideoPlayer()
-    #     self.other_window.show()
+    def open_video_ui(self):
+        self.other_window = video.VideoPlayer()
+        self.other_window.show()
 
         # Total gui 화면 창 전환 (로그인 완료)
     def open_total_gui_window(self):
         self.total_gui_window = Total_gui_Window()
         self.total_gui_window.show()
         self.close()
-    
+
     # Logout 기능
     def switch_login(self):
         reply = QMessageBox.question(self, 'Message', '로그인 화면으로 돌아가시겠습니까?',
@@ -243,62 +339,7 @@ class Total_gui_Window(QMainWindow, total_gui_class):
         else:
             pass
     
-
-#--------------------------------------------------------------------------------------------------------------------------------
-    # def analyze_files(self):
-    #     if not self.files:
-    #         QMessageBox.warning(self, "Warning", "먼저 파일을 업로드하십시오.")
-    #         return
-
-    #     url = 'http://192.168.0.156:5000/api/upload'
-    #     self.progress_dialog = QProgressDialog("파일 전송 중...", None, 0, 100, self)
-    #     self.progress_dialog.setWindowTitle("전송 중")
-    #     self.progress_dialog.setWindowModality(Qt.WindowModal)
-    #     self.progress_dialog.show()
-
-    #     self.thread = FileUploadThread(self.files, url)
-    #     self.thread.update_progress.connect(self.update_progress)
-    #     self.thread.finished.connect(self.on_finished)
-    #     self.thread.error.connect(self.on_error)
-    #     self.thread.start()
-
-    # def update_progress(self, progress):
-    #     self.progress_dialog.setValue(progress)
-
-    # def on_finished(self, response_files):
-    #     self.progress_dialog.close()
-    #     QMessageBox.information(self, "Success", "파일 전송이 완료되었습니다.")
-    #     # response_files를 처리하는 코드를 여기에 작성하십시오.
-
-    # def on_error(self, error_message):
-    #     self.progress_dialog.close()
-    #     QMessageBox.critical(self, "Error", error_message)
-
-
-
-    # def receive_processed_files(self, file_names):
-    #     base_url = 'http://192.168.0.156:5000/download'  # 처리된 파일을 받는 서버의 엔드포인트
-    #     processed_files = []
-
-    #     progress_dialog = QProgressDialog("파일 다운로드 중...", None, 0, len(file_names), self)
-    #     progress_dialog.setWindowTitle("다운로드 중")
-    #     progress_dialog.setWindowModality(Qt.WindowModal)
-
-    #     for file_name in file_names:
-    #         try:
-    #             response = requests.get(f"{base_url}/{file_name}")
-    #             if response.status_code == 200:
-    #                 save_path = os.path.join("/home/hb/Downloads/project_test/", file_name)  # 처리된 파일을 저장할 경로 설정
-    #                 with open(save_path, 'wb') as f:
-    #                     f.write(response.content)
-    #                 processed_files.append(save_path)
-    #             else:
-    #                 QMessageBox.warning(self, "Failed", f"{file_name} 파일 다운로드 실패: {response.status_code}")
-    #         except Exception as e:
-    #             QMessageBox.critical(self, "Error", f"파일 다운로드 중 오류 발생: {str(e)}")
-
 # -------------------------------------------------------------------------------------------------------------------------------------------
-
 
 # Sign up Class
 class Sign_up_Window(QDialog, sign_up_class):
@@ -313,7 +354,7 @@ class Sign_up_Window(QDialog, sign_up_class):
         user_id = self.Idld.text()
         
         data = {'user_id': user_id}
-        response = requests.post('http://192.168.0.156:5000/api/check', json=data)
+        response = requests.post('http://192.168.0.126:5000/api/check', json=data)
         
         if response.status_code == 401:
             
@@ -355,7 +396,7 @@ class Sign_up_Window(QDialog, sign_up_class):
             
             
         data = {'user_birthday':user_birthday, 'user_name': user_name, 'user_id': user_id, 'user_password':user_password}
-        response = requests.post('http://192.168.0.156:5000/api/signup', json=data)
+        response = requests.post('http://192.168.0.126:5000/api/signup', json=data)
         
         
         if response.status_code == 201:
@@ -387,7 +428,7 @@ class WindowClass(QMainWindow, from_class) :
         user_password = self.Passwordedit.text()
         
         data = {'user_id': user_id, 'user_password':user_password}
-        response = requests.post('http://192.168.0.156:5000/api/signin', json=data)
+        response = requests.post('http://192.168.0.126:5000/api/signin', json=data)
         
         
         if response.status_code == 201:
@@ -414,11 +455,32 @@ class WindowClass(QMainWindow, from_class) :
         self.total_gui_window.show()
         self.close()
     
+# class WorkerThread(QThread):
+#     progress_changed = pyqtSignal(int, str, str)  # 진행률, 파일 이름, 상태
+
+#     def __init__(self, files):
+#         super().__init__()
+#         self.files = files
+
+#     def run(self):
+#         for i, (file_path, file_name) in enumerate(self.files):
+#             try:
+#                 with open(file_path, 'rb') as f:
+#                     server_address = 'http://192.168.1.214:5000'
+#                     response = requests.post(f'{server_address}/api/upload', files={'file': f})
+#                 if response.status_code == 200:
+#                     self.progress_changed.emit(i + 1, file_name, "analyzed")
+#                 else:
+#                     self.progress_changed.emit(i + 1, file_name, "failed")
+#             except Exception as e:
+#                 self.progress_changed.emit(i + 1, file_name, "failed")
+#                 print(f"Error analyzing {file_name}: {e}")
+
        
 if __name__ == "__main__":
     app = QApplication(sys.argv) 
-    # myWindows = WindowClass() 
     myWindows = WindowClass() 
+    # myWindows = Total_gui_Window() 
     myWindows.show() 
     
     sys.exit(app.exec_()) 
