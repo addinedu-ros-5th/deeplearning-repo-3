@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1306</width>
+    <width>1238</width>
     <height>896</height>
    </rect>
   </property>
@@ -126,7 +126,7 @@ Font-weight:bold;
          <item>
           <widget class="QPushButton" name="windows1">
            <property name="text">
-            <string>Main</string>
+            <string>Window</string>
            </property>
            <property name="icon">
             <iconset>
@@ -195,50 +195,33 @@ Font-weight:bold;
     <item row="0" column="2">
      <widget class="QWidget" name="main_menu" native="true">
       <layout class="QVBoxLayout" name="verticalLayout_5">
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
        <item>
         <widget class="QWidget" name="widget" native="true">
          <layout class="QHBoxLayout" name="horizontalLayout_2">
+          <property name="topMargin">
+           <number>0</number>
+          </property>
           <item>
-           <widget class="QPushButton" name="pushButton_13">
-            <property name="styleSheet">
-             <string notr="true">border:none;</string>
+           <widget class="QLabel" name="label_5">
+            <property name="font">
+             <font>
+              <pointsize>17</pointsize>
+              <weight>75</weight>
+              <italic>true</italic>
+              <bold>true</bold>
+              <strikeout>false</strikeout>
+             </font>
+            </property>
+            <property name="frameShape">
+             <enum>QFrame::NoFrame</enum>
             </property>
             <property name="text">
-             <string/>
-            </property>
-            <property name="icon">
-             <iconset>
-              <normaloff>:/image/menu.png</normaloff>:/image/menu.png</iconset>
-            </property>
-            <property name="iconSize">
-             <size>
-              <width>24</width>
-              <height>24</height>
-             </size>
-            </property>
-            <property name="checkable">
-             <bool>true</bool>
-            </property>
-            <property name="autoExclusive">
-             <bool>true</bool>
+             <string>Autonomous driving analysis system</string>
             </property>
            </widget>
-          </item>
-          <item>
-           <spacer name="horizontalSpacer">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeType">
-             <enum>QSizePolicy::Fixed</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>58</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
           </item>
           <item>
            <spacer name="horizontalSpacer_2">
@@ -255,26 +238,6 @@ Font-weight:bold;
              </size>
             </property>
            </spacer>
-          </item>
-          <item>
-           <widget class="QPushButton" name="set_2">
-            <property name="styleSheet">
-             <string notr="true">border:none;</string>
-            </property>
-            <property name="text">
-             <string/>
-            </property>
-            <property name="icon">
-             <iconset>
-              <normaloff>:/image/image.png</normaloff>:/image/image.png</iconset>
-            </property>
-            <property name="iconSize">
-             <size>
-              <width>16</width>
-              <height>24</height>
-             </size>
-            </property>
-           </widget>
           </item>
          </layout>
         </widget>
@@ -333,7 +296,7 @@ QPushButton{
             </font>
            </property>
            <property name="text">
-            <string>Summary of Results</string>
+            <string>Result List</string>
            </property>
           </widget>
           <widget class="QTableWidget" name="tableWidget1">
@@ -342,7 +305,7 @@ QPushButton{
              <x>490</x>
              <y>420</y>
              <width>611</width>
-             <height>351</height>
+             <height>371</height>
             </rect>
            </property>
            <property name="styleSheet">
@@ -369,7 +332,7 @@ QPushButton{
              <x>10</x>
              <y>20</y>
              <width>471</width>
-             <height>751</height>
+             <height>771</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_6">
@@ -401,38 +364,17 @@ QPushButton{
                </spacer>
               </item>
               <item>
-               <widget class="QPushButton" name="upload">
-                <property name="font">
-                 <font>
-                  <pointsize>14</pointsize>
-                 </font>
+               <spacer name="horizontalSpacer_5">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
                 </property>
-                <property name="text">
-                 <string>Upload</string>
-                </property>
-                <property name="icon">
-                 <iconset>
-                  <normaloff>:/image/upload.png</normaloff>:/image/upload.png</iconset>
-                </property>
-                <property name="iconSize">
+                <property name="sizeHint" stdset="0">
                  <size>
-                  <width>18</width>
-                  <height>18</height>
+                  <width>40</width>
+                  <height>20</height>
                  </size>
                 </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QPushButton" name="delbtn">
-                <property name="font">
-                 <font>
-                  <pointsize>14</pointsize>
-                 </font>
-                </property>
-                <property name="text">
-                 <string>Del</string>
-                </property>
-               </widget>
+               </spacer>
               </item>
               <item>
                <widget class="QPushButton" name="analyze">
@@ -464,6 +406,52 @@ QPushButton{
                <string notr="true">background-color: rgb(246, 245, 244);</string>
               </property>
               <layout class="QHBoxLayout" name="horizontalLayout_6">
+               <item>
+                <widget class="QPushButton" name="upload">
+                 <property name="font">
+                  <font>
+                   <pointsize>11</pointsize>
+                  </font>
+                 </property>
+                 <property name="text">
+                  <string>Upload</string>
+                 </property>
+                 <property name="icon">
+                  <iconset>
+                   <normaloff>:/image/upload.png</normaloff>:/image/upload.png</iconset>
+                 </property>
+                 <property name="iconSize">
+                  <size>
+                   <width>16</width>
+                   <height>16</height>
+                  </size>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="delbtn">
+                 <property name="minimumSize">
+                  <size>
+                   <width>40</width>
+                   <height>0</height>
+                  </size>
+                 </property>
+                 <property name="maximumSize">
+                  <size>
+                   <width>40</width>
+                   <height>16777215</height>
+                  </size>
+                 </property>
+                 <property name="font">
+                  <font>
+                   <pointsize>11</pointsize>
+                  </font>
+                 </property>
+                 <property name="text">
+                  <string>Del</string>
+                 </property>
+                </widget>
+               </item>
                <item>
                 <widget class="QLineEdit" name="searchbar"/>
                </item>
@@ -851,6 +839,64 @@ QPushButton{
             <string>pass</string>
            </property>
           </widget>
+          <widget class="QPushButton" name="pushButton_14">
+           <property name="geometry">
+            <rect>
+             <x>930</x>
+             <y>80</y>
+             <width>28</width>
+             <height>24</height>
+            </rect>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">border:none;</string>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+           <property name="icon">
+            <iconset>
+             <normaloff>:/image/menu.png</normaloff>:/image/menu.png</iconset>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>24</width>
+             <height>24</height>
+            </size>
+           </property>
+           <property name="checkable">
+            <bool>true</bool>
+           </property>
+           <property name="autoExclusive">
+            <bool>true</bool>
+           </property>
+          </widget>
+          <widget class="QPushButton" name="set_3">
+           <property name="geometry">
+            <rect>
+             <x>964</x>
+             <y>80</y>
+             <width>20</width>
+             <height>24</height>
+            </rect>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">border:none;</string>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+           <property name="icon">
+            <iconset>
+             <normaloff>:/image/image.png</normaloff>:/image/image.png</iconset>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>16</width>
+             <height>24</height>
+            </size>
+           </property>
+          </widget>
          </widget>
         </widget>
        </item>
@@ -1035,7 +1081,7 @@ Font-weight:bold;
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1306</width>
+     <width>1238</width>
      <height>22</height>
     </rect>
    </property>
@@ -1139,38 +1185,6 @@ Font-weight:bold;
     <hint type="destinationlabel">
      <x>148</x>
      <y>745</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>pushButton_13</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>icon_widget_2</receiver>
-   <slot>setVisible(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>228</x>
-     <y>64</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>176</x>
-     <y>400</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>pushButton_13</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>icon_widget</receiver>
-   <slot>setHidden(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>228</x>
-     <y>64</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>67</x>
-     <y>411</y>
     </hint>
    </hints>
   </connection>
