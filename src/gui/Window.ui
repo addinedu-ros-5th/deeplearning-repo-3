@@ -7,14 +7,15 @@
     <x>0</x>
     <y>0</y>
     <width>1238</width>
-    <height>896</height>
+    <height>885</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">background-color: rgb(149, 147, 147);</string>
+   <string notr="true">background-color: rgb(149, 147, 147);
+</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
@@ -40,7 +41,7 @@
       </property>
       <property name="styleSheet">
        <string notr="true">QWidget{
-	background-color: rgb(95, 92, 92);
+	background-color: rgb(36, 31, 49);
    color:white;
 }
 
@@ -89,10 +90,13 @@ Font-weight:bold;
           <string/>
          </property>
          <property name="pixmap">
-          <pixmap>:/image/profile_pic.png</pixmap>
+          <pixmap resource="resources.qrc">:/image/file.png</pixmap>
          </property>
          <property name="scaledContents">
           <bool>true</bool>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
          </property>
         </widget>
        </item>
@@ -126,10 +130,10 @@ Font-weight:bold;
          <item>
           <widget class="QPushButton" name="windows1">
            <property name="text">
-            <string>Window</string>
+            <string>Evaluation</string>
            </property>
            <property name="icon">
-            <iconset>
+            <iconset resource="resources.qrc">
              <normaloff>:/image/window_wh.png</normaloff>
              <normalon>:/image/window_wh.png</normalon>:/image/window_wh.png</iconset>
            </property>
@@ -178,7 +182,7 @@ Font-weight:bold;
           <string>Log Out  </string>
          </property>
          <property name="icon">
-          <iconset>
+          <iconset resource="resources.qrc">
            <normaloff>:/image/log_out_white.png</normaloff>:/image/log_out_white.png</iconset>
          </property>
          <property name="checkable">
@@ -194,6 +198,9 @@ Font-weight:bold;
     </item>
     <item row="0" column="2">
      <widget class="QWidget" name="main_menu" native="true">
+      <property name="styleSheet">
+       <string notr="true">background-color: rgb(222, 221, 218);</string>
+      </property>
       <layout class="QVBoxLayout" name="verticalLayout_5">
        <property name="bottomMargin">
         <number>0</number>
@@ -246,7 +253,7 @@ Font-weight:bold;
         <widget class="QStackedWidget" name="stackedWidget">
          <property name="styleSheet">
           <string notr="true">QWidget{
-	background-color: rgb(216, 216, 216);
+	background-color: rgb(192, 191, 188);
 
 }
 
@@ -264,7 +271,7 @@ QPushButton{
              <x>490</x>
              <y>10</y>
              <width>101</width>
-             <height>51</height>
+             <height>41</height>
             </rect>
            </property>
            <property name="font">
@@ -278,6 +285,9 @@ QPushButton{
             <string>pass</string>
            </property>
            <property name="frame">
+            <bool>true</bool>
+           </property>
+           <property name="readOnly">
             <bool>true</bool>
            </property>
           </widget>
@@ -387,7 +397,7 @@ QPushButton{
                  <string>Analyze</string>
                 </property>
                 <property name="icon">
-                 <iconset>
+                 <iconset resource="resources.qrc">
                   <normaloff>:/image/analytics.png</normaloff>:/image/analytics.png</iconset>
                 </property>
                 <property name="iconSize">
@@ -417,7 +427,7 @@ QPushButton{
                   <string>Upload</string>
                  </property>
                  <property name="icon">
-                  <iconset>
+                  <iconset resource="resources.qrc">
                    <normaloff>:/image/upload.png</normaloff>:/image/upload.png</iconset>
                  </property>
                  <property name="iconSize">
@@ -461,7 +471,7 @@ QPushButton{
                   <string/>
                  </property>
                  <property name="icon">
-                  <iconset>
+                  <iconset resource="resources.qrc">
                    <normaloff>:/image/search.png</normaloff>:/image/search.png</iconset>
                  </property>
                 </widget>
@@ -658,7 +668,7 @@ QPushButton{
             <string>Upload</string>
            </property>
            <property name="icon">
-            <iconset>
+            <iconset resource="resources.qrc">
              <normaloff>:/image/upload.png</normaloff>:/image/upload.png</iconset>
            </property>
            <property name="iconSize">
@@ -686,7 +696,7 @@ QPushButton{
             <string>Upload</string>
            </property>
            <property name="icon">
-            <iconset>
+            <iconset resource="resources.qrc">
              <normaloff>:/image/upload.png</normaloff>:/image/upload.png</iconset>
            </property>
            <property name="iconSize">
@@ -747,7 +757,7 @@ QPushButton{
             <string>Compare</string>
            </property>
            <property name="icon">
-            <iconset>
+            <iconset resource="resources.qrc">
              <normaloff>:/image/report.png</normaloff>:/image/report.png</iconset>
            </property>
            <property name="iconSize">
@@ -855,7 +865,7 @@ QPushButton{
             <string/>
            </property>
            <property name="icon">
-            <iconset>
+            <iconset resource="resources.qrc">
              <normaloff>:/image/menu.png</normaloff>:/image/menu.png</iconset>
            </property>
            <property name="iconSize">
@@ -887,7 +897,7 @@ QPushButton{
             <string/>
            </property>
            <property name="icon">
-            <iconset>
+            <iconset resource="resources.qrc">
              <normaloff>:/image/image.png</normaloff>:/image/image.png</iconset>
            </property>
            <property name="iconSize">
@@ -910,7 +920,7 @@ QPushButton{
       </property>
       <property name="styleSheet">
        <string notr="true">QWidget{
-	background-color: rgb(95, 92, 92);
+	background-color: rgb(36, 31, 49);
 }
 
 QPushButton{
@@ -950,7 +960,7 @@ Font-weight:bold;
           <string/>
          </property>
          <property name="pixmap">
-          <pixmap>:/image/profile_pic.png</pixmap>
+          <pixmap resource="resources.qrc">:/image/file.png</pixmap>
          </property>
          <property name="scaledContents">
           <bool>true</bool>
@@ -987,7 +997,7 @@ Font-weight:bold;
             <string/>
            </property>
            <property name="icon">
-            <iconset>
+            <iconset resource="resources.qrc">
              <normaloff>:/image/window.png</normaloff>
              <normalon>:/image/window.png</normalon>:/image/window.png</iconset>
            </property>
@@ -1036,7 +1046,7 @@ Font-weight:bold;
           <string/>
          </property>
          <property name="icon">
-          <iconset>
+          <iconset resource="resources.qrc">
            <normaloff>:/image/log_out.png</normaloff>:/image/log_out.png</iconset>
          </property>
          <property name="checkable">
