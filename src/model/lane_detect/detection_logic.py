@@ -209,7 +209,7 @@ if __name__ == "__main__":
 
     # 결과 비디오 파일 설정
     fourcc = cv2.VideoWriter_fourcc(*'MJPG')
-    output_path = 'output5.avi'
+    output_path = './output/output.avi'
     img_w, img_h = 1280, 720  # CULane과 Tusimple의 해상도 설정
     col_sample = np.linspace(0, 800 - 1, cfg.griding_num)
     col_sample_w = col_sample[1] - col_sample[0]
@@ -324,6 +324,6 @@ if __name__ == "__main__":
     print(f'Results saved to {output_path}')
 
     # 로그 데이터를 JSON 파일로 저장
-    with open('log_data.json', 'w') as f:
+    with open('./output_json/log_data.json', 'w') as f:
         json.dump(log_data, f, indent=4)
     print(f'Log data saved to log_data.json')
