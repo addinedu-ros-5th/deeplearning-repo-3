@@ -5,6 +5,9 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5 import uic
 from PyQt5.QtCore import *
+import matplotlib.pyplot as plt
+from matplotlib.figure import Figure
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 import res_rc
 import video
 import tkinter as tk
@@ -12,11 +15,11 @@ import requests
 import time
 
 
-from_class = uic.loadUiType('/home/hb/dev_ws/running/deep/project/Total/login.ui')[0] 
-sign_up_class = uic.loadUiType('/home/hb/dev_ws/running/deep/project/Total/signup.ui')[0] 
+from_class = uic.loadUiType('/home/ys/Downloads/zDeepgui_rev1/login.ui')[0] 
+sign_up_class = uic.loadUiType('/home/ys/Downloads/zDeepgui_rev1/signup.ui')[0] 
 
-total_gui_class = uic.loadUiType('/home/hb/dev_ws/running/deep/project/Total/Window2.ui')[0] 
-video_class = uic.loadUiType('/home/hb/dev_ws/running/deep/project/Total/video.ui')[0] 
+total_gui_class = uic.loadUiType('/home/ys/Downloads/zDeepgui_rev1/Window.ui')[0] 
+video_class = uic.loadUiType('/home/ys/Downloads/zDeepgui_rev1/video.ui')[0] 
 
 class FileUploadThread(QThread):
     update_progress = pyqtSignal(int)
@@ -60,9 +63,8 @@ class FileUploadThread(QThread):
             print(f"Video received and saved as '{output_path}'")
         else:
             self.error.emit("Failed to download processed video")
-        
-        
-    
+            
+            
         
 class VideoPlayer(QMainWindow, video_class):
     def __init__(self, video_path=None):
@@ -71,7 +73,8 @@ class VideoPlayer(QMainWindow, video_class):
         
         self.setWindowTitle("Visual Resualt") 
         
-        self.video_path = video_path
+        self.video_directory = '/home/ys/Downloads/zDeepgui_rev1/'
+        self.video_path = 'annotated_' +  video_path
         self.cap = cv2.VideoCapture(self.video_path)
         self.cap = None
         self.timer = QTimer()
@@ -87,16 +90,19 @@ class VideoPlayer(QMainWindow, video_class):
         self.bar.sliderMoved.connect(self.set_position)
         self.Save.clicked.connect(self.save_memo)
 
-        self.load_video(self.video_path)
-
-        
+        full_video_path = self.get_full_video_path(self.video_path)
+        self.load_video(full_video_path)
     
-    
-    
+    def get_full_video_path(self, video_path):
+        return os.path.join(self.video_directory, video_path)
     
     def load_video(self, video_path):
         self.cap = cv2.VideoCapture(video_path)
+        if not self.cap.isOpened():
+            QMessageBox.critical(self, "Error", "Could not open video.")
+            return
         self.bar.setMaximum(int(self.cap.get(cv2.CAP_PROP_FRAME_COUNT)))
+
 
     def play_pause(self):
         if self.playing:
@@ -208,24 +214,17 @@ class Total_gui_Window(QMainWindow, total_gui_class):
         self.tableWidget.cellClicked.connect(self.cell_was_clicked)
         
         self.tableWidget1.setColumnCount(6)
-        self.tableWidget1.setHorizontalHeaderLabels(['File path', 'Video ID', 'Speed', 'Pedestrian', 'Traffic', 'Fail Num'])
+        self.tableWidget1.setHorizontalHeaderLabels(['File path', 'Video ID', 'Vehicle', 'Pedestrian', 'Traffic', 'Fail Num'])
         self.tableWidget1.cellClicked.connect(self.cell_was_clicked)
         self.tableWidget1.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.tableWidget1.setColumnHidden(0, True)  
 
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_data_from_server)
-        self.timer.start(5000)  # 5초마다 업데이트
-
-        # 초기화할 때 한 번 데이터를 받아옴
+        self.timer.start(3000)
+        
+        
         self.update_data_from_server()
-
-        
-        
-
-        
-        
-        
         
     def update_progress(self, value):
         self.progress_bar.setValue(value)
@@ -243,37 +242,42 @@ class Total_gui_Window(QMainWindow, total_gui_class):
     def log_error(self, message):
         self.log_text.append(f"Error: {message}")
     
+    def update_table_for_analyzed_video(self, video_name):
+        for row in range(self.tableWidget.rowCount()):
+            item = self.tableWidget.item(row, 2) 
+            if item and item.text() == video_name:
+                self.tableWidget.setItem(row, 3, QTableWidgetItem("Analyzed"))
+                break
     
     def update_data_from_server(self):
         try:
-            # 서버 URL
-            server_url = 'http://192.168.0.156:5000/api/processing_complete'
+            server_url = 'http://192.168.0.126:5000/api/processing_complete'
 
-            # HTTP GET 요청 보내기
             response = requests.get(server_url)
 
-            # 응답 확인
             if response.status_code == 200:
-                # JSON 응답 파싱
                 data = response.json()
                 
-                if data:  # 새로운 데이터가 있는 경우에만 업데이트
+                if data: 
                     self.update_gui(data)
+                    self.plot_graph()
                     
+                    for result in data:
+                        video_name = result['Video_ID']
+                        self.update_table_for_analyzed_video(video_name)
             else:
-                print("서버로부터 응답을 받는 중 오류가 발생했습니다:", response.status_code)
+                print("An error occurred while receiving a response from the server.:", response.status_code)
         except Exception as e:
-            print("데이터 업데이트 중 오류가 발생했습니다:", e)
+            print("An error occurred while updating data:", e)
         
     
     def update_gui(self, data):
 
-        # 서버에서 받은 각 처리 결과를 테이블에 추가
         for result in data:
             row_count = self.tableWidget1.rowCount()
             self.tableWidget1.insertRow(row_count)
             self.tableWidget1.setItem(row_count, 1, QTableWidgetItem(result['Video_ID']))
-            self.tableWidget1.setItem(row_count, 2, QTableWidgetItem(result['Speed']))
+            self.tableWidget1.setItem(row_count, 2, QTableWidgetItem(result['Vehicle']))
             self.tableWidget1.setItem(row_count, 3, QTableWidgetItem(result['Pedestrian']))
             self.tableWidget1.setItem(row_count, 4, QTableWidgetItem(result['Traffic']))
             self.tableWidget1.setItem(row_count, 5, QTableWidgetItem(result['Fail_Num']))
@@ -312,11 +316,6 @@ class Total_gui_Window(QMainWindow, total_gui_class):
                     checkbox_layout.setAlignment(Qt.AlignCenter)  
                     checkbox_layout.setContentsMargins(0, 0, 0, 0)
                     self.tableWidget.setCellWidget(row_position, 0, checkbox_widget)
-
-
-                
-                
-    
     
     
     def delete_selected_rows(self):
@@ -330,7 +329,7 @@ class Total_gui_Window(QMainWindow, total_gui_class):
             self.tableWidget.removeRow(row)
                 
     def toggle_checkbox(self, row, column):
-        if column == 2:  
+        if column == 2 | 0:  
             checkbox_widget = self.tableWidget.cellWidget(row, 0)
             checkbox = checkbox_widget.findChild(QCheckBox)
             checkbox.setChecked(not checkbox.isChecked())
@@ -366,19 +365,25 @@ class Total_gui_Window(QMainWindow, total_gui_class):
         self.progress_dialog.setWindowModality(Qt.WindowModal)
         self.progress_dialog.setValue(0)
 
-        url = 'http://192.168.0.156:5000/api/upload'
+        url = 'http://192.168.0.126:5000/api/upload'
         self.thread = FileUploadThread(files_to_analyze, url)
         self.thread.update_progress.connect(self.update_progress)
-        #self.thread.error.connect(self.on_error)
+        self.thread.download_complete.connect(self.finish_analysis)
         self.thread.start()
-        #self.progress_dialog.canceled.connect(self.cancel_analysis)
+        self.progress_dialog.canceled.connect(self.cancel_analysis)
         
-    
+    def finish_analysis(self, message):
+        self.progress_dialog.reset()
+        self.timer.start(100)
     
     def on_download_complete(self, message):
         QMessageBox.information(self, "Info", message)
         self.progress_dialog.reset()
-    
+        
+    def cancel_analysis(self):
+        self.thread.stop()
+        self.progress_dialog.close()
+        QMessageBox.information(self, "Information", "Analysis cancelled.")
     
     def update_progress(self, value):
         self.progress_dialog.setValue(value)
@@ -393,7 +398,7 @@ class Total_gui_Window(QMainWindow, total_gui_class):
             self.open_video_ui(video_file_name)
             
     def open_video_ui(self, video_file_name):
-        self.other_window = VideoPlayer(video_file_name)
+        self.other_window = VideoPlayer( video_file_name)
         self.other_window.show()
 
     def open_total_gui_window(self):
@@ -413,7 +418,43 @@ class Total_gui_Window(QMainWindow, total_gui_class):
         self.from_class = WindowClass()
         self.from_class.show()
         self.close()
-    
+        
+    def plot_graph(self):
+        self.timer.stop()
+        video_ids = []
+        fail_counts = []
+
+        self.fig = plt.Figure()
+        self.canvas = FigureCanvas(self.fig)
+
+        self.graph.addWidget(self.canvas)
+        
+        for row in range(self.tableWidget1.rowCount()):
+            video_ids.append(self.tableWidget1.item(row, 1).text())
+            fail_counts.append(int(self.tableWidget1.item(row, 5).text()))
+
+        ax = self.fig.add_subplot(111)
+        ax.bar(video_ids, fail_counts, label='Fail Number', color='skyblue')
+
+        ax.set_xlabel('Video IDs')
+        ax.set_ylabel('Fail Number')
+        ax.set_title('Fail Analysis Results')
+        ax.legend()
+        self.canvas.draw()
+
+        if any(count > 0 for count in fail_counts):
+            self.grade.setText('fail')
+        else:
+            self.grade.setText('pass')
+            
+        vbox_layout = self.findChild(QVBoxLayout, "graph")
+        while vbox_layout.count():
+            item = vbox_layout.takeAt(0)
+            widget = item.widget()
+            if widget is not None:
+                widget.deleteLater()
+                
+        vbox_layout.addWidget(self.canvas)
 # -------------------------------------------------------------------------------------------------------------------------------------------
 
 class Sign_up_Window(QDialog, sign_up_class):
@@ -427,7 +468,7 @@ class Sign_up_Window(QDialog, sign_up_class):
         user_id = self.Idld.text()
         
         data = {'user_id': user_id}
-        response = requests.post('http://192.168.0.156:5000/api/check', json=data)
+        response = requests.post('http://192.168.0.126:5000/api/check', json=data)
         
         if response.status_code == 401:
             
@@ -468,7 +509,7 @@ class Sign_up_Window(QDialog, sign_up_class):
             
             
         data = {'user_birthday':user_birthday, 'user_name': user_name, 'user_id': user_id, 'user_password':user_password}
-        response = requests.post('http://192.168.0.156:5000/api/signup', json=data)
+        response = requests.post('http://192.168.0.126:5000/api/signup', json=data)
         
         
         if response.status_code == 201:
@@ -497,7 +538,7 @@ class WindowClass(QMainWindow, from_class) :
         user_password = self.Passwordedit.text()
         
         data = {'user_id': user_id, 'user_password':user_password}
-        response = requests.post('http://192.168.0.156:5000/api/signin', json=data)
+        response = requests.post('http://192.168.0.126:5000/api/signin', json=data)
         
         
         if response.status_code == 201:
@@ -521,27 +562,6 @@ class WindowClass(QMainWindow, from_class) :
         self.total_gui_window = Total_gui_Window()
         self.total_gui_window.show()
         self.close()
-    
-# class WorkerThread(QThread):
-#     progress_changed = pyqtSignal(int, str, str)  # 진행률, 파일 이름, 상태
-
-#     def __init__(self, files):
-#         super().__init__()
-#         self.files = files
-
-#     def run(self):
-#         for i, (file_path, file_name) in enumerate(self.files):
-#             try:
-#                 with open(file_path, 'rb') as f:
-#                     server_address = 'http://192.168.1.214:5000'
-#                     response = requests.post(f'{server_address}/api/upload', files={'file': f})
-#                 if response.status_code == 200:
-#                     self.progress_changed.emit(i + 1, file_name, "analyzed")
-#                 else:
-#                     self.progress_changed.emit(i + 1, file_name, "failed")
-#             except Exception as e:
-#                 self.progress_changed.if __name__ == "__main__":
-
 
        
 if __name__ == "__main__":

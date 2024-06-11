@@ -11,7 +11,6 @@ import numpy as np
 app = Flask(__name__)
 CORS(app)
 
-# MySQL 데이터베이스 연결 설정
 db = mysql.connector.connect(
     host="database-1.czkmo68qelp7.ap-northeast-2.rds.amazonaws.com",
     user="mk",
@@ -19,11 +18,12 @@ db = mysql.connector.connect(
     database="Driving"
 )
 
-UPLOAD_FOLDER = '/home/hb/dev_ws/running/deep/project'
-PROCESSED_FOLDER = '/home/hb/Downloads/project_test'  # 실제 처리된 파일을 저장할 폴더 경로로 변경하십시오
+UPLOAD_FOLDER = '/home/ys/Downloads'
+PROCESSED_FOLDER = '/home/ys/Downloads/zDeepgui_rev1'  # 실제 처리된 파일을 저장할 폴더 경로로 변경하십시오
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['PROCESSED_FOLDER'] = PROCESSED_FOLDER
 
+<<<<<<< HEAD
 # # Load the YOLOv8 model
 # model = YOLO('/home/hb/dev_ws/running/deep/project/Logic/all_best.pt')
 
@@ -32,6 +32,54 @@ app.config['PROCESSED_FOLDER'] = PROCESSED_FOLDER
 
 # # 신호등 색상 예측을 위한 모델을 로드합니다.
 # traffic_light_color_model = YOLO("/home/hb/dev_ws/running/deep/project/Logic/traffic_best.pt")
+=======
+model = YOLO('all_best.pt')
+
+traffic_light_class_id = 6
+
+traffic_light_color_model = YOLO("traffic_best.pt")
+
+confidence_threshold = 0.2
+
+def detect_traffic_light(frame):
+    results = model(frame)
+    for result in results:
+        for detection in result.boxes.data:
+            x1, y1, x2, y2, confidence, class_id = detection
+            confidence = float(confidence)
+            class_id = int(class_id)
+            print(f"Detected class ID: {class_id}, Confidence: {confidence}")
+            if class_id == traffic_light_class_id and confidence >= confidence_threshold:
+                x1, y1, x2, y2 = map(int, [x1, y1, x2, y2])
+                traffic_light_roi = frame[y1:y2, x1:x2]
+                is_green, is_red = is_green_or_red_light(traffic_light_roi)
+                color = (0, 255, 0) if is_green else (0, 0, 255) if is_red else (0, 255, 255)
+                cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
+                label = "Green Light" if is_green else "Red Light" if is_red else "Unknown"
+                cv2.putText(frame, label, (x1, y1-10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, color, 2)
+                if is_green:
+                    return True
+    return False
+
+def is_green_or_red_light(traffic_light_roi):
+    hsv = cv2.cvtColor(traffic_light_roi, cv2.COLOR_BGR2HSV)
+    green_lower = np.array([33, 30, 30])
+    green_upper = np.array([89, 255, 255])
+    red_lower1 = np.array([0, 70, 70])
+    red_upper1 = np.array([10, 255, 255])
+    red_lower2 = np.array([170, 70, 70])
+    red_upper2 = np.array([180, 255, 255])
+    green_mask = cv2.inRange(hsv, green_lower, green_upper)
+    red_mask1 = cv2.inRange(hsv, red_lower1, red_upper1)
+    red_mask2 = cv2.inRange(hsv, red_upper2, red_upper2)
+    red_mask = cv2.bitwise_or(red_mask1, red_mask2)
+    green_ratio = cv2.countNonZero(green_mask) / (traffic_light_roi.size / 3)
+    red_ratio = cv2.countNonZero(red_mask) / (traffic_light_roi.size / 3)
+    print(f"Green ratio: {green_ratio}, Red ratio: {red_ratio}")
+    is_green = green_ratio > 0.05
+    is_red = red_ratio > 0.05
+    return is_green, is_red
+>>>>>>> 111f9d8513081ab42f6bd79449ef3761559d5c26
 
 # # 신뢰도 임계값 설정
 # confidence_threshold = 0.2
@@ -80,14 +128,14 @@ app.config['PROCESSED_FOLDER'] = PROCESSED_FOLDER
 def insert_pass_to_database_local(video_name):
     try:
         cursor = db.cursor()
-        sql = "INSERT INTO violation (Video_ID, Speed, Pedestrian, Traffic, Fail_Num) VALUES (%s, 'pass', 'pass', 'pass', 'pass')"
+        sql = "INSERT INTO violation (Video_ID, Vehicle, Pedestrian, Traffic, Fail_Num) VALUES (%s, 'pass', 'pass', 'pass', 'pass')"
         cursor.execute(sql, (video_name,))
         db.commit()
-        print("Pass 문장이 데이터베이스에 삽입되었습니다.")
+        print("Pass has inserted into database.")
         
         data_to_send = {
-            "Video_ID": video_name,
-            "Speed": "pass",
+            "Video_ID": 'annotated_' + video_name,
+            "Vehicle": "pass",
             "Pedestrian": "pass",
             "Traffic": "pass",
             "Fail_Num": "pass"
@@ -95,7 +143,7 @@ def insert_pass_to_database_local(video_name):
         return jsonify(data_to_send), 200
         
     except Exception as e:
-        print("Pass 문장 삽입 중 오류가 발생했습니다:", e)
+        print("An error occurred while inserting Pass:", e)
         return None
 
 
@@ -121,38 +169,32 @@ def evaluate_traffic_lights(video_path, output_path):
         out.write(frame)
     cap.release()
     out.release()
-    insert_pass_to_database_local(video_name)  # 함수 호출 시 video_name 전달
+    insert_pass_to_database_local(video_name) 
    
    
 @app.route('/api/process_video/<filename>', methods=['GET'])
 def process_and_send_video(filename):
-    # 비디오 파일 경로 생성
     processed_video_path = os.path.join(app.config['PROCESSED_FOLDER'], filename)
     
-    # 파일이 존재하는지 확인
     if not os.path.exists(processed_video_path):
         return "File not found", 404
     
-    # 처리된 비디오 파일을 클라이언트에게 전송
     return send_file(processed_video_path)
 
 def process_video(video_path):
     output_path = os.path.join(app.config['PROCESSED_FOLDER'], 'annotated_' + os.path.basename(video_path))
-    evaluate_traffic_lights(video_path, output_path)  # 비디오 처리 함수 호출
-    return 'annotated_' + os.path.basename(video_path)
+    evaluate_traffic_lights(video_path, output_path) 
+    return os.path.basename(video_path)
     
     
     
-# 초기값은 처리 중으로 설정
 completion_status = 'processing'
 
-# 각 영상 파일의 처리 상태를 저장하는 딕셔너리
 video_completion_statuses = {}
 
 @app.route('/api/completion_status', methods=['GET'])
 def get_completion_status():
     global completion_status
-    # 모든 영상 파일의 처리 상태를 확인하여 모두가 'completed' 상태이면 'completed'로 설정
     if all(status == 'completed' for status in video_completion_statuses.values()):
         completion_status = 'completed'
     return jsonify({'completion_status': completion_status})
@@ -197,7 +239,7 @@ def upload_video():
         
         processed_results.append({
             "Video_ID": filename,
-            "Speed": "pass",
+            "Vehicle": "pass",
             "Pedestrian": "pass",
             "Traffic": "pass",
             "Fail_Num": "0"
@@ -212,9 +254,8 @@ def upload_video():
 
 @app.route('/api/processing_complete', methods=['GET'])
 def processing_complete():
-    global processed_results, new_results_index  # 전역 변수를 사용할 것을 명시
+    global processed_results, new_results_index  
     if new_results_index < len(processed_results):
-        # 새로운 결과가 있는 경우 해당 결과를 반환하고 인덱스 업데이트
         new_data = processed_results[new_results_index:]
         new_results_index = len(processed_results)
         return jsonify(new_data), 200
