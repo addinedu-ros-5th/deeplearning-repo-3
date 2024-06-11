@@ -12,44 +12,57 @@ import requests
 import time
 
 
-from_class = uic.loadUiType('login.ui')[0] 
-sign_up_class = uic.loadUiType('signup.ui')[0] 
+from_class = uic.loadUiType('/home/hb/dev_ws/running/deep/project/Total/login.ui')[0] 
+sign_up_class = uic.loadUiType('/home/hb/dev_ws/running/deep/project/Total/signup.ui')[0] 
 
-total_gui_class = uic.loadUiType('Window.ui')[0] 
-video_class = uic.loadUiType('video.ui')[0] 
+total_gui_class = uic.loadUiType('/home/hb/dev_ws/running/deep/project/Total/Window2.ui')[0] 
+video_class = uic.loadUiType('/home/hb/dev_ws/running/deep/project/Total/video.ui')[0] 
 
 class FileUploadThread(QThread):
     update_progress = pyqtSignal(int)
-    finished = pyqtSignal(list)
     error = pyqtSignal(str)
+    download_complete = pyqtSignal(str)
 
-    def __init__(self, files, url):
+    def __init__(self, files_to_analyze, url):
         super().__init__()
-        self.files = files
+        self.files_to_analyze = files_to_analyze
         self.url = url
 
     def run(self):
-        response_files = []
-        total_files = len(self.files)
-
         try:
-            for i, file_path in enumerate(self.files):
-                files = [('file', (os.path.basename(file_path), open(file_path, 'rb')))]
+            for idx, file_path in enumerate(self.files_to_analyze):
+                files = {'file': open(file_path, 'rb')}
                 response = requests.post(self.url, files=files)
                 if response.status_code == 201:
-                    response_files.extend(response.json().get('processed_videos', []))
+                    data = response.json()
+                    processed_video = data['processed_videos'][0]
+                    download_url = f"{processed_video}"
+                    self.download_video(download_url)
                 else:
-                    self.error.emit(f"File transfer failed: {response.status_code}")
+                    self.error.emit("Failed to upload video")
                     return
 
-                progress = (i + 1) / total_files * 100
-                self.update_progress.emit(int(progress))
+                self.update_progress.emit(int((idx + 1) / len(self.files_to_analyze) * 100))
+
+            self.download_complete.emit("All files processed and downloaded successfully")
 
         except Exception as e:
-            self.error.emit(f"Error occurred while transferring file: {str(e)}")
-            return
+            self.error.emit(str(e))
 
-        self.finished.emit(response_files)
+    def download_video(self, url):
+        response = requests.get(url, stream=True)
+        if response.status_code == 200:
+            output_path = 'received_' + os.path.basename(url)
+            with open(output_path, 'wb') as f:
+                for chunk in response.iter_content(chunk_size=1024):
+                    if chunk:
+                        f.write(chunk)
+            print(f"Video received and saved as '{output_path}'")
+        else:
+            self.error.emit("Failed to download processed video")
+        
+        
+    
         
 class VideoPlayer(QMainWindow, video_class):
     def __init__(self, video_path=None):
@@ -76,12 +89,18 @@ class VideoPlayer(QMainWindow, video_class):
 
         self.load_video(self.video_path)
 
+        
+    
+    
+    
+    
     def load_video(self, video_path):
         self.cap = cv2.VideoCapture(video_path)
         self.bar.setMaximum(int(self.cap.get(cv2.CAP_PROP_FRAME_COUNT)))
 
     def play_pause(self):
         if self.playing:
+            self.next_frame()
             self.timer.stop()
         else:
             self.timer.start(30)
@@ -193,7 +212,74 @@ class Total_gui_Window(QMainWindow, total_gui_class):
         self.tableWidget1.cellClicked.connect(self.cell_was_clicked)
         self.tableWidget1.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.tableWidget1.setColumnHidden(0, True)  
+
+        self.timer = QTimer(self)
+        self.timer.timeout.connect(self.update_data_from_server)
+        self.timer.start(5000)  # 5초마다 업데이트
+
+        # 초기화할 때 한 번 데이터를 받아옴
+        self.update_data_from_server()
+
         
+        
+
+        
+        
+        
+        
+    def update_progress(self, value):
+        self.progress_bar.setValue(value)
+
+    def upload_finished(self, response_files):
+        for response_file in response_files:
+            for row in range(self.tableWidget.rowCount()):
+                file_path_item = self.tableWidget.item(row, 1)
+                if file_path_item and file_path_item.text() == response_file.get('Video_ID'):
+                    status_item = QTableWidgetItem("Download Link")
+                    status_item.setData(Qt.UserRole, response_file.get('processed_video_url'))
+                    self.tableWidget.setItem(row, 3, status_item)
+
+    
+    def log_error(self, message):
+        self.log_text.append(f"Error: {message}")
+    
+    
+    def update_data_from_server(self):
+        try:
+            # 서버 URL
+            server_url = 'http://192.168.0.156:5000/api/processing_complete'
+
+            # HTTP GET 요청 보내기
+            response = requests.get(server_url)
+
+            # 응답 확인
+            if response.status_code == 200:
+                # JSON 응답 파싱
+                data = response.json()
+                
+                if data:  # 새로운 데이터가 있는 경우에만 업데이트
+                    self.update_gui(data)
+                    
+            else:
+                print("서버로부터 응답을 받는 중 오류가 발생했습니다:", response.status_code)
+        except Exception as e:
+            print("데이터 업데이트 중 오류가 발생했습니다:", e)
+        
+    
+    def update_gui(self, data):
+
+        # 서버에서 받은 각 처리 결과를 테이블에 추가
+        for result in data:
+            row_count = self.tableWidget1.rowCount()
+            self.tableWidget1.insertRow(row_count)
+            self.tableWidget1.setItem(row_count, 1, QTableWidgetItem(result['Video_ID']))
+            self.tableWidget1.setItem(row_count, 2, QTableWidgetItem(result['Speed']))
+            self.tableWidget1.setItem(row_count, 3, QTableWidgetItem(result['Pedestrian']))
+            self.tableWidget1.setItem(row_count, 4, QTableWidgetItem(result['Traffic']))
+            self.tableWidget1.setItem(row_count, 5, QTableWidgetItem(result['Fail_Num']))
+    
+    
+    
     def switch_to_windowPage(self):
         self.stackedWidget.setCurrentIndex(0)
     
@@ -201,14 +287,13 @@ class Total_gui_Window(QMainWindow, total_gui_class):
         options = QFileDialog.Options()
         files, _ = QFileDialog.getOpenFileNames(self, "파일 선택", "", "비디오 파일 (*.mp4 *.avi *.mov *.mkv);;모든 파일 (*)", options=options)
         if files:
-            for file in files:
-                file_name = os.path.basename(file)  
-                file_path = file
+            for file_path in files:
+                file_name = os.path.basename(file_path)
                 for row in range(self.tableWidget.rowCount()):
                     existing_file_name = self.tableWidget.item(row, 2).text()
                     if file_name == existing_file_name:
                         reply = QMessageBox.question(self, 'Warning', f"'{file_name}' The file is already exiests.", 
-                                                     QMessageBox.Yes)
+                                                    QMessageBox.Yes)
                         if reply == QMessageBox.Yes:
                             self.upload_files() 
                         return
@@ -217,16 +302,22 @@ class Total_gui_Window(QMainWindow, total_gui_class):
                     self.tableWidget.insertRow(row_position)
                     self.tableWidget.setItem(row_position, 2, QTableWidgetItem(file_name))
                     self.tableWidget.setItem(row_position, 1, QTableWidgetItem(file_path)) 
+                    
+                    checkbox_widget = QWidget()
+                    checkbox = QCheckBox()
+                    checkbox.setEnabled(False)
+                    checkbox.setChecked(False)
+                    checkbox_layout = QHBoxLayout(checkbox_widget)
+                    checkbox_layout.addWidget(checkbox)
+                    checkbox_layout.setAlignment(Qt.AlignCenter)  
+                    checkbox_layout.setContentsMargins(0, 0, 0, 0)
+                    self.tableWidget.setCellWidget(row_position, 0, checkbox_widget)
+
+
                 
-                checkbox_widget = QWidget()
-                checkbox = QCheckBox()
-                checkbox.setEnabled(False)
-                checkbox.setChecked(False)
-                checkbox_layout = QHBoxLayout(checkbox_widget)
-                checkbox_layout.addWidget(checkbox)
-                checkbox_layout.setAlignment(Qt.AlignCenter)  
-                checkbox_layout.setContentsMargins(0, 0, 0, 0)
-                self.tableWidget.setCellWidget(row_position, 0, checkbox_widget)
+                
+    
+    
     
     def delete_selected_rows(self):
         rows_to_delete = []
@@ -265,41 +356,37 @@ class Total_gui_Window(QMainWindow, total_gui_class):
 
         files_to_analyze = []
         for row in range(self.tableWidget.rowCount()):
-            file_path = self.tableWidget.item(row, 1).text()
-            files_to_analyze.append(file_path)
+            checkbox_widget = self.tableWidget.cellWidget(row, 0)
+            checkbox = checkbox_widget.findChild(QCheckBox)
+            if checkbox.isChecked():
+                file_path = self.tableWidget.item(row, 1).text()
+                files_to_analyze.append(file_path)
 
-        self.progress_dialog = QProgressDialog("Analyzing files...", "Cancel", 0, len(files_to_analyze), self)
+        self.progress_dialog = QProgressDialog("Analyzing files...", "Cancel", 0, 100, self)
         self.progress_dialog.setWindowModality(Qt.WindowModal)
         self.progress_dialog.setValue(0)
 
-        url = 'http://192.168.0.126:5000/api/upload'
+        url = 'http://192.168.0.156:5000/api/upload'
         self.thread = FileUploadThread(files_to_analyze, url)
         self.thread.update_progress.connect(self.update_progress)
-        self.thread.error.connect(self.on_error)
+        #self.thread.error.connect(self.on_error)
         self.thread.start()
-        self.progress_dialog.canceled.connect(self.cancel_analysis)
-
+        #self.progress_dialog.canceled.connect(self.cancel_analysis)
+        
+    
+    
+    def on_download_complete(self, message):
+        QMessageBox.information(self, "Info", message)
+        self.progress_dialog.reset()
+    
+    
     def update_progress(self, value):
         self.progress_dialog.setValue(value)
         if value == self.tableWidget.rowCount():
             self.progress_dialog.close()
             QMessageBox.information(self, "Successed", "All files have been analyzed.")
 
-    def on_error(self, error_message):
-        self.progress_dialog.close()
-        QMessageBox.critical(self, "Error", error_message)
 
-    def cancel_analysis(self):
-        self.thread.terminate()
-        self.progress_dialog.close() 
-
-    def update_table_status(self, value, file_name, status):
-        for row in range(self.tableWidget1.rowCount()):
-            if self.tableWidget1.item(row, 1).text() == file_name:
-                self.tableWidget1.setItem(row, 5, QTableWidgetItem(status))
-                break
-        self.update_progress(value)
-    
     def cell_was_clicked(self, row, column):
         if column == 5:
             video_file_name = self.tableWidget1.item(row, 1).text()
@@ -340,7 +427,7 @@ class Sign_up_Window(QDialog, sign_up_class):
         user_id = self.Idld.text()
         
         data = {'user_id': user_id}
-        response = requests.post('http://192.168.0.126:5000/api/check', json=data)
+        response = requests.post('http://192.168.0.156:5000/api/check', json=data)
         
         if response.status_code == 401:
             
@@ -381,7 +468,7 @@ class Sign_up_Window(QDialog, sign_up_class):
             
             
         data = {'user_birthday':user_birthday, 'user_name': user_name, 'user_id': user_id, 'user_password':user_password}
-        response = requests.post('http://192.168.0.126:5000/api/signup', json=data)
+        response = requests.post('http://192.168.0.156:5000/api/signup', json=data)
         
         
         if response.status_code == 201:
@@ -410,7 +497,7 @@ class WindowClass(QMainWindow, from_class) :
         user_password = self.Passwordedit.text()
         
         data = {'user_id': user_id, 'user_password':user_password}
-        response = requests.post('http://192.168.0.126:5000/api/signin', json=data)
+        response = requests.post('http://192.168.0.156:5000/api/signin', json=data)
         
         
         if response.status_code == 201:
@@ -453,14 +540,14 @@ class WindowClass(QMainWindow, from_class) :
 #                 else:
 #                     self.progress_changed.emit(i + 1, file_name, "failed")
 #             except Exception as e:
-#                 self.progress_changed.emit(i + 1, file_name, "failed")
-#                 print(f"Error analyzing {file_name}: {e}")
+#                 self.progress_changed.if __name__ == "__main__":
+
 
        
 if __name__ == "__main__":
     app = QApplication(sys.argv) 
-    myWindows = WindowClass() 
-    # myWindows = Total_gui_Window() 
+    myWindows = WindowClass()
+    #myWindows = Total_gui_Window()
     myWindows.show() 
     
     sys.exit(app.exec_()) 

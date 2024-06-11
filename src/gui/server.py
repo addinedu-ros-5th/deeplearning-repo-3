@@ -1,13 +1,12 @@
 import mysql.connector
 from flask_cors import CORS
 import base64
-from flask import Flask, request, jsonify, Response, send_file
+from flask import *
 from werkzeug.utils import secure_filename
 import os
 import cv2
 from ultralytics import YOLO
 import numpy as np
-
 
 app = Flask(__name__)
 CORS(app)
@@ -19,8 +18,8 @@ db = mysql.connector.connect(
     password="1234",
     database="Driving"
 )
-##--------------------
-UPLOAD_FOLDER = '/home/hb/Downloads/project_test'
+
+UPLOAD_FOLDER = '/home/hb/dev_ws/running/deep/project'
 PROCESSED_FOLDER = '/home/hb/Downloads/project_test'  # 실제 처리된 파일을 저장할 폴더 경로로 변경하십시오
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['PROCESSED_FOLDER'] = PROCESSED_FOLDER
@@ -36,30 +35,6 @@ traffic_light_color_model = YOLO("/home/hb/dev_ws/running/deep/project/Logic/tra
 
 # 신뢰도 임계값 설정
 confidence_threshold = 0.2
-
-@app.route('/api/upload', methods=['POST'])
-def upload_video():
-    if 'file' not in request.files:
-        return jsonify({'error': 'No video files provided'}), 400
-
-    videos = request.files.getlist('file')
-    if not videos:
-        return jsonify({'error': 'No selected files'}), 405
-
-    processed_videos = []
-
-    for video in videos:
-        if video.filename == '':
-            continue
-
-        filename = secure_filename(video.filename)
-        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        video.save(filepath)
-
-        processed_video_path = process_video(filepath)
-        processed_videos.append(processed_video_path)
-
-    return jsonify({'message': 'Files uploaded and processed successfully', 'processed_videos': processed_videos}), 201
 
 def detect_traffic_light(frame):
     results = model(frame)
@@ -100,6 +75,33 @@ def is_green_or_red_light(traffic_light_roi):
     is_red = red_ratio > 0.05
     return is_green, is_red
 
+
+
+
+
+@app.route('/api/send_data', methods=['POST'])
+def insert_pass_to_database_local(video_name):
+    try:
+        cursor = db.cursor()
+        sql = "INSERT INTO violation (Video_ID, Speed, Pedestrian, Traffic, Fail_Num) VALUES (%s, 'pass', 'pass', 'pass', 'pass')"
+        cursor.execute(sql, (video_name,))
+        db.commit()
+        print("Pass 문장이 데이터베이스에 삽입되었습니다.")
+        
+        data_to_send = {
+            "Video_ID": video_name,
+            "Speed": "pass",
+            "Pedestrian": "pass",
+            "Traffic": "pass",
+            "Fail_Num": "pass"
+        }
+        return jsonify(data_to_send), 200
+        
+    except Exception as e:
+        print("Pass 문장 삽입 중 오류가 발생했습니다:", e)
+        return None
+
+
 def evaluate_traffic_lights(video_path, output_path):
     cap = cv2.VideoCapture(video_path)
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')
@@ -107,6 +109,9 @@ def evaluate_traffic_lights(video_path, output_path):
     width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     out = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
+    
+    video_name = os.path.basename(video_path)
+    
     while cap.isOpened():
         ret, frame = cap.read()
         if not ret:
@@ -119,17 +124,112 @@ def evaluate_traffic_lights(video_path, output_path):
         out.write(frame)
     cap.release()
     out.release()
-
-@app.route('/download/<filename>', methods=['GET'])
-def download_file(filename):
-    return send_from_directory(app.config['PROCESSED_FOLDER'], filename)
+    insert_pass_to_database_local(video_name)  # 함수 호출 시 video_name 전달
+   
+   
+@app.route('/api/process_video/<filename>', methods=['GET'])
+def process_and_send_video(filename):
+    # 비디오 파일 경로 생성
+    processed_video_path = os.path.join(app.config['PROCESSED_FOLDER'], filename)
+    
+    # 파일이 존재하는지 확인
+    if not os.path.exists(processed_video_path):
+        return "File not found", 404
+    
+    # 처리된 비디오 파일을 클라이언트에게 전송
+    return send_file(processed_video_path)
 
 def process_video(video_path):
     output_path = os.path.join(app.config['PROCESSED_FOLDER'], 'annotated_' + os.path.basename(video_path))
-    evaluate_traffic_lights(video_path, output_path)
+    evaluate_traffic_lights(video_path, output_path)  # 비디오 처리 함수 호출
     return 'annotated_' + os.path.basename(video_path)
+    
+    
+    
+# 초기값은 처리 중으로 설정
+completion_status = 'processing'
 
-##-------------------------------
+# 각 영상 파일의 처리 상태를 저장하는 딕셔너리
+video_completion_statuses = {}
+
+@app.route('/api/completion_status', methods=['GET'])
+def get_completion_status():
+    global completion_status
+    # 모든 영상 파일의 처리 상태를 확인하여 모두가 'completed' 상태이면 'completed'로 설정
+    if all(status == 'completed' for status in video_completion_statuses.values()):
+        completion_status = 'completed'
+    return jsonify({'completion_status': completion_status})
+
+@app.route('/api/set_completion_status', methods=['POST'])
+def set_completion_status():
+    global completion_status
+    data = request.get_json()
+    new_status = data.get('status')
+    completion_status = new_status
+    return jsonify({'message': 'Completion status updated successfully', 'completion_status': completion_status}), 200
+
+processed_results = []
+new_results_index = 0
+
+
+
+@app.route('/api/upload', methods=['POST'])
+def upload_video():
+
+    global processed_results 
+	
+    if 'file' not in request.files:
+        return jsonify({'error': 'No video files provided'}), 400
+
+    videos = request.files.getlist('file')
+    if not videos:
+        return jsonify({'error': 'No selected files'}), 405
+
+    processed_videos = []
+
+    for video in videos:
+        if video.filename == '':
+            continue
+
+        filename = secure_filename(video.filename)
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        video.save(filepath)
+
+        processed_video_path = process_video(filepath)
+        processed_videos.append(processed_video_path)
+        
+        
+        
+        processed_results.append({
+            "Video_ID": filename,
+            "Speed": "pass",
+            "Pedestrian": "pass",
+            "Traffic": "pass",
+            "Fail_Num": "0"
+        })
+    
+    
+
+    processed_video_urls = [url_for('process_and_send_video', filename=os.path.basename(path), _external=True) for path in processed_videos]
+    
+    
+    return jsonify({'message': 'Files uploaded and processed successfully', 'processed_videos': processed_video_urls}), 201
+
+
+@app.route('/api/processing_complete', methods=['GET'])
+def processing_complete():
+    global processed_results, new_results_index  # 전역 변수를 사용할 것을 명시
+    if new_results_index < len(processed_results):
+        # 새로운 결과가 있는 경우 해당 결과를 반환하고 인덱스 업데이트
+        new_data = processed_results[new_results_index:]
+        new_results_index = len(processed_results)
+        return jsonify(new_data), 200
+    else:
+        return jsonify([]), 200 
+
+
+#----------------------------------------------------------------------------------------------------------------------------------
+
 @app.route('/api/check', methods=['POST'])
 def check_id():
     data = request.get_json()
