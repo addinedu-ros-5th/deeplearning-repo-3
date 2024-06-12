@@ -6,8 +6,12 @@ from werkzeug.utils import secure_filename
 import os
 import cv2
 from ultralytics import YOLO
+from judge_logic.total_evaluation.total_evaluation import main as evaluation_main
+import zipfile
+
 app = Flask(__name__)
 CORS(app)
+
 # MySQL 데이터베이스 연결 설정
 db = mysql.connector.connect(
     host="database-1.czkmo68qelp7.ap-northeast-2.rds.amazonaws.com",
@@ -15,9 +19,11 @@ db = mysql.connector.connect(
     password="1234",
     database="Driving"
 )
-##--------------------
+
 UPLOAD_FOLDER = '/home/addinedu/dev_ws/src/video'
+PROCESSED_FOLDER = '/data/output_data'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+os.makedirs(PROCESSED_FOLDER, exist_ok=True)
 
 # Load the YOLOv8 model
 model = YOLO('/home/addinedu/dev_ws/src/YOLO/yolov8n.pt')
@@ -31,7 +37,6 @@ def upload_video():
     if not videos:
         return jsonify({'error': 'No selected files'}), 400
 
-    # List to store processed video paths
     processed_videos = []
 
     for video in videos:
@@ -42,48 +47,46 @@ def upload_video():
         filepath = os.path.join(UPLOAD_FOLDER, filename)
         video.save(filepath)
 
-        # Process the video and save the annotated video
-        processed_video_path = process_video(filepath)
-        processed_videos.append(processed_video_path)
+        # Process the video and create the necessary files
+        processed_video_path, json_path, csv_path = process_video(filepath)
+
+        # Create a zip file containing the processed files
+        zip_path = create_zip_file(processed_video_path, json_path, csv_path)
+        processed_videos.append(zip_path)
 
     return jsonify({'message': 'Files uploaded and processed successfully', 'processed_videos': processed_videos}), 201
 
 def process_video(video_path):
-    cap = cv2.VideoCapture(video_path)
+    base_filename = os.path.splitext(os.path.basename(video_path))[0]
+    output_video_path = os.path.join(PROCESSED_FOLDER, f'output_{base_filename}.mp4')
+    json_path = os.path.join(PROCESSED_FOLDER, f'{base_filename}.json')
+    csv_path = os.path.join(PROCESSED_FOLDER, f'{base_filename}.csv')
 
-    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
-    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
+    # Call the main function from total_evaluation.py
+    evaluation_main(video_path, model.model_path, model.model_path)
 
-    # Get the frame dimensions
-    frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-    frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    return output_video_path, json_path, csv_path
 
-    # Define the codec and create VideoWriter object
-    out = cv2.VideoWriter('annotated_' + os.path.basename(video_path), cv2.VideoWriter_fourcc(*'mp4v'), 30, (frame_width, frame_height))
+def create_zip_file(video_path, json_path, csv_path):
+    base_filename = os.path.splitext(os.path.basename(video_path))[0]
+    zip_filename = os.path.join(PROCESSED_FOLDER, f'{base_filename}.zip')
+    
+    with zipfile.ZipFile(zip_filename, 'w') as zipf:
+        zipf.write(video_path, os.path.basename(video_path))
+        zipf.write(json_path, os.path.basename(json_path))
+        zipf.write(csv_path, os.path.basename(csv_path))
+    
+    return zip_filename
 
-    while cap.isOpened():
-        success, frame = cap.read()
-        if not success:
-            break
+@app.route('/api/download/<zip_name>', methods=['GET'])
+def download_zip(zip_name):
+    zip_path = os.path.join(PROCESSED_FOLDER, f'{zip_name}.zip')
+    
+    if not os.path.exists(zip_path):
+        return jsonify({'error': 'File not found'}), 404
 
-        # Perform object detection and annotation
-        results = model.track(frame, persist=True)
-        annotated_frame = results[0].plot()
+    return send_file(zip_path, as_attachment=True), 200
 
-        # Write the annotated frame to the output video
-        out.write(annotated_frame)
-
-    # Release everything when job is finished
-    cap.release()
-    out.release()
-    cv2.destroyAllWindows()
-
-    return 'annotated_' + os.path.basename(video_path)
-
-@app.route('/api/download/<video_name>', methods=['GET'])
-def download_video(video_name):
-    video_path = os.path.join(UPLOAD_FOLDER, video_name)
-    return send_file(video_path, as_attachment=True), 201
 
 ##-------------------------------
 @app.route('/api/check', methods=['POST'])

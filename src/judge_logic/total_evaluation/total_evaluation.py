@@ -183,7 +183,7 @@ def main(video_path, vehicle_model_path, traffic_light_model_path):
 
     # 인풋 영상 파일명에서 확장자 제거
     base_filename = os.path.splitext(os.path.basename(video_path))[0]
-    output_filename = f"./data/output_data/output_{base_filename}.mp4"
+    output_filename = f"./data/output_data/{base_filename}_analysis_video.mp4"
 
     # VideoWriter 객체 생성
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # 코덱 설정 (예: mp4v)
@@ -323,10 +323,10 @@ def main(video_path, vehicle_model_path, traffic_light_model_path):
     df = df.groupby('ID').apply(get_most_common_row).apply(pd.Series)
 
     # 데이터프레임을 CSV 파일로 저장
-    df.to_csv(f"./data/output_data/output_{base_filename}.csv", index=False, header=True)
+    df.to_csv(f"./data/output_data/{base_filename}_analysis_summary.csv", index=False, header=True)
     
     # 데이터프레임을 JSON 파일로 저장
-    save_results_to_json(vehicle_results, traffic_light_results, f'./data/output_data/output_{base_filename}.json', video_length)
+    save_results_to_json(vehicle_results, traffic_light_results, f'./data/output_data/{base_filename}_analysis_log.json', video_length)
 
 if __name__ == "__main__":
     video_path = "./data/input_data/b.MOV"
