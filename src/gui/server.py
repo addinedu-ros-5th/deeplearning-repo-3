@@ -7,6 +7,10 @@ import os
 import cv2
 from ultralytics import YOLO
 import numpy as np
+from flask import Flask, request, jsonify, send_file
+import json
+from judge_logic.total_evaluation.total_evaluation import main
+
 
 app = Flask(__name__)
 CORS(app)
@@ -23,7 +27,7 @@ PROCESSED_FOLDER = '/home/ys/Downloads/zDeepgui_rev1'  # 실제 처리된 파일
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['PROCESSED_FOLDER'] = PROCESSED_FOLDER
 
-<<<<<<< HEAD
+
 # # Load the YOLOv8 model
 # model = YOLO('/home/hb/dev_ws/running/deep/project/Logic/all_best.pt')
 
@@ -32,54 +36,53 @@ app.config['PROCESSED_FOLDER'] = PROCESSED_FOLDER
 
 # # 신호등 색상 예측을 위한 모델을 로드합니다.
 # traffic_light_color_model = YOLO("/home/hb/dev_ws/running/deep/project/Logic/traffic_best.pt")
-=======
-model = YOLO('all_best.pt')
 
-traffic_light_class_id = 6
+# model = YOLO('all_best.pt')
 
-traffic_light_color_model = YOLO("traffic_best.pt")
+# traffic_light_class_id = 6
 
-confidence_threshold = 0.2
+# traffic_light_color_model = YOLO("traffic_best.pt")
 
-def detect_traffic_light(frame):
-    results = model(frame)
-    for result in results:
-        for detection in result.boxes.data:
-            x1, y1, x2, y2, confidence, class_id = detection
-            confidence = float(confidence)
-            class_id = int(class_id)
-            print(f"Detected class ID: {class_id}, Confidence: {confidence}")
-            if class_id == traffic_light_class_id and confidence >= confidence_threshold:
-                x1, y1, x2, y2 = map(int, [x1, y1, x2, y2])
-                traffic_light_roi = frame[y1:y2, x1:x2]
-                is_green, is_red = is_green_or_red_light(traffic_light_roi)
-                color = (0, 255, 0) if is_green else (0, 0, 255) if is_red else (0, 255, 255)
-                cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
-                label = "Green Light" if is_green else "Red Light" if is_red else "Unknown"
-                cv2.putText(frame, label, (x1, y1-10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, color, 2)
-                if is_green:
-                    return True
-    return False
+# confidence_threshold = 0.2
 
-def is_green_or_red_light(traffic_light_roi):
-    hsv = cv2.cvtColor(traffic_light_roi, cv2.COLOR_BGR2HSV)
-    green_lower = np.array([33, 30, 30])
-    green_upper = np.array([89, 255, 255])
-    red_lower1 = np.array([0, 70, 70])
-    red_upper1 = np.array([10, 255, 255])
-    red_lower2 = np.array([170, 70, 70])
-    red_upper2 = np.array([180, 255, 255])
-    green_mask = cv2.inRange(hsv, green_lower, green_upper)
-    red_mask1 = cv2.inRange(hsv, red_lower1, red_upper1)
-    red_mask2 = cv2.inRange(hsv, red_upper2, red_upper2)
-    red_mask = cv2.bitwise_or(red_mask1, red_mask2)
-    green_ratio = cv2.countNonZero(green_mask) / (traffic_light_roi.size / 3)
-    red_ratio = cv2.countNonZero(red_mask) / (traffic_light_roi.size / 3)
-    print(f"Green ratio: {green_ratio}, Red ratio: {red_ratio}")
-    is_green = green_ratio > 0.05
-    is_red = red_ratio > 0.05
-    return is_green, is_red
->>>>>>> 111f9d8513081ab42f6bd79449ef3761559d5c26
+# def detect_traffic_light(frame):
+#     results = model(frame)
+#     for result in results:
+#         for detection in result.boxes.data:
+#             x1, y1, x2, y2, confidence, class_id = detection
+#             confidence = float(confidence)
+#             class_id = int(class_id)
+#             print(f"Detected class ID: {class_id}, Confidence: {confidence}")
+#             if class_id == traffic_light_class_id and confidence >= confidence_threshold:
+#                 x1, y1, x2, y2 = map(int, [x1, y1, x2, y2])
+#                 traffic_light_roi = frame[y1:y2, x1:x2]
+#                 is_green, is_red = is_green_or_red_light(traffic_light_roi)
+#                 color = (0, 255, 0) if is_green else (0, 0, 255) if is_red else (0, 255, 255)
+#                 cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
+#                 label = "Green Light" if is_green else "Red Light" if is_red else "Unknown"
+#                 cv2.putText(frame, label, (x1, y1-10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, color, 2)
+#                 if is_green:
+#                     return True
+#     return False
+
+# def is_green_or_red_light(traffic_light_roi):
+#     hsv = cv2.cvtColor(traffic_light_roi, cv2.COLOR_BGR2HSV)
+#     green_lower = np.array([33, 30, 30])
+#     green_upper = np.array([89, 255, 255])
+#     red_lower1 = np.array([0, 70, 70])
+#     red_upper1 = np.array([10, 255, 255])
+#     red_lower2 = np.array([170, 70, 70])
+#     red_upper2 = np.array([180, 255, 255])
+#     green_mask = cv2.inRange(hsv, green_lower, green_upper)
+#     red_mask1 = cv2.inRange(hsv, red_lower1, red_upper1)
+#     red_mask2 = cv2.inRange(hsv, red_upper2, red_upper2)
+#     red_mask = cv2.bitwise_or(red_mask1, red_mask2)
+#     green_ratio = cv2.countNonZero(green_mask) / (traffic_light_roi.size / 3)
+#     red_ratio = cv2.countNonZero(red_mask) / (traffic_light_roi.size / 3)
+#     print(f"Green ratio: {green_ratio}, Red ratio: {red_ratio}")
+#     is_green = green_ratio > 0.05
+#     is_red = red_ratio > 0.05
+#     return is_green, is_red
 
 # # 신뢰도 임계값 설정
 # confidence_threshold = 0.2
@@ -123,6 +126,23 @@ def is_green_or_red_light(traffic_light_roi):
 #     is_red = red_ratio > 0.05
 #     return is_green, is_red
 
+@app.route('/api/uploded', methods=['POST'])
+def upload_video():
+    if 'video' not in request.files:
+        return "No video file found in the request", 400
+    video_file = request.files['video']
+    video_path = os.path.join("uploaded_videos", video_file.filename)
+    video_file.save(video_path)
+    
+    vehicle_model_path = "yolov8n.pt"
+    traffic_light_model_path = "/home/addinedu/dev_ws/src/ai_project/deeplearning-repo-3/src/model/traffic_light/traffic_best_ver2.pt"
+    
+    # Call the main function for video processing
+    main(video_path, vehicle_model_path, traffic_light_model_path)
+    
+    # Send the resulting CSV file to the client
+    return send_file('combined_detection_results.csv', as_attachment=True)
+
 
 @app.route('/api/send_data', methods=['POST'])
 def insert_pass_to_database_local(video_name):
@@ -147,29 +167,29 @@ def insert_pass_to_database_local(video_name):
         return None
 
 
-def evaluate_traffic_lights(video_path, output_path):
-    cap = cv2.VideoCapture(video_path)
-    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-    fps = cap.get(cv2.CAP_PROP_FPS)
-    width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-    height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-    out = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
+# def evaluate_traffic_lights(video_path, output_path):
+#     cap = cv2.VideoCapture(video_path)
+#     fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+#     fps = cap.get(cv2.CAP_PROP_FPS)
+#     width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+#     height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+#     out = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
     
-    video_name = os.path.basename(video_path)
+#     video_name = os.path.basename(video_path)
     
-    while cap.isOpened():
-        ret, frame = cap.read()
-        if not ret:
-            break
-        is_green_light_detected = detect_traffic_light(frame)
-        if is_green_light_detected:
-            print("정차 상태에서 초록불에 출발했습니다.")
-        else:
-            print("정차 상태에서 초록불에 출발하지 않았습니다.")
-        out.write(frame)
-    cap.release()
-    out.release()
-    insert_pass_to_database_local(video_name) 
+#     while cap.isOpened():
+#         ret, frame = cap.read()
+#         if not ret:
+#             break
+#         is_green_light_detected = detect_traffic_light(frame)
+#         if is_green_light_detected:
+#             print("정차 상태에서 초록불에 출발했습니다.")
+#         else:
+#             print("정차 상태에서 초록불에 출발하지 않았습니다.")
+#         out.write(frame)
+#     cap.release()
+#     out.release()
+#     insert_pass_to_database_local(video_name) 
    
    
 @app.route('/api/process_video/<filename>', methods=['GET'])
