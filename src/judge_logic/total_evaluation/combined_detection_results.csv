@@ -1,3 +1,11 @@
-ID,Object_Type,Class ID,Status,Pass/Fail
-59,person,0,Driving,Fail
-105,car,2,Stopped,Pass
+0,1,2,3,4,5,6
+traffic_light,Green,13,2,DRIVING,Green,Pass
+traffic_light,Green and Green Arrow,43,4,DRIVING,Green and Green Arrow,Pass
+pedestrian,pedestrian,59,0,Driving,,Fail
+traffic_light,Yellow,70,3,DRIVING,Yellow,Pass
+traffic_light,Red and Green Arrow,90,1,STOP,Red and Green Arrow,Pass
+vehicle,car,105,2,Stopped,,Pass
+traffic_light,Red,114,0,STOP,Red,Pass
+traffic_light,Red,118,0,STOP,Red,Pass
+vehicle,car,125,2,Stopped,,Pass
+traffic_light,Red,133,0,STOP,Red,Pass
