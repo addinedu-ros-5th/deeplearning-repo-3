@@ -15,11 +15,11 @@ import requests
 import time
 
 
-from_class = uic.loadUiType('/home/ys/Downloads/zDeepgui_rev1/login.ui')[0] 
-sign_up_class = uic.loadUiType('/home/ys/Downloads/zDeepgui_rev1/signup.ui')[0] 
+from_class = uic.loadUiType('./login.ui')[0] 
+sign_up_class = uic.loadUiType('./signup.ui')[0] 
 
-total_gui_class = uic.loadUiType('/home/ys/Downloads/zDeepgui_rev1/Window.ui')[0] 
-video_class = uic.loadUiType('/home/ys/Downloads/zDeepgui_rev1/video.ui')[0] 
+total_gui_class = uic.loadUiType('./Window.ui')[0] 
+video_class = uic.loadUiType('./video.ui')[0] 
 
 class FileUploadThread(QThread):
     update_progress = pyqtSignal(int)
@@ -73,7 +73,7 @@ class VideoPlayer(QMainWindow, video_class):
         
         self.setWindowTitle("Visual Resualt") 
         
-        self.video_directory = '/home/ys/Downloads/zDeepgui_rev1/'
+        self.video_directory = '/home/addinedu/Downloads/6.MOV/'
         self.video_path = 'annotated_' +  video_path
         self.cap = cv2.VideoCapture(self.video_path)
         self.cap = None
@@ -251,7 +251,7 @@ class Total_gui_Window(QMainWindow, total_gui_class):
     
     def update_data_from_server(self):
         try:
-            server_url = 'http://192.168.0.126:5000/api/processing_complete'
+            server_url = 'http://172.30.1.74:5000/api/processing_complete'
 
             response = requests.get(server_url)
 
@@ -365,7 +365,7 @@ class Total_gui_Window(QMainWindow, total_gui_class):
         self.progress_dialog.setWindowModality(Qt.WindowModal)
         self.progress_dialog.setValue(0)
 
-        url = 'http://192.168.0.126:5000/api/upload'
+        url = 'http://172.30.1.74:5000/api/uploaded'
         self.thread = FileUploadThread(files_to_analyze, url)
         self.thread.update_progress.connect(self.update_progress)
         self.thread.download_complete.connect(self.finish_analysis)
@@ -468,7 +468,7 @@ class Sign_up_Window(QDialog, sign_up_class):
         user_id = self.Idld.text()
         
         data = {'user_id': user_id}
-        response = requests.post('http://192.168.0.126:5000/api/check', json=data)
+        response = requests.post('http://172.30.1.74:5000/api/check', json=data)
         
         if response.status_code == 401:
             
@@ -509,7 +509,7 @@ class Sign_up_Window(QDialog, sign_up_class):
             
             
         data = {'user_birthday':user_birthday, 'user_name': user_name, 'user_id': user_id, 'user_password':user_password}
-        response = requests.post('http://192.168.0.126:5000/api/signup', json=data)
+        response = requests.post('http://172.30.1.74:5000/api/signup', json=data)
         
         
         if response.status_code == 201:
@@ -538,7 +538,7 @@ class WindowClass(QMainWindow, from_class) :
         user_password = self.Passwordedit.text()
         
         data = {'user_id': user_id, 'user_password':user_password}
-        response = requests.post('http://192.168.0.126:5000/api/signin', json=data)
+        response = requests.post('http://172.30.1.74:5000/api/signin', json=data)
         
         
         if response.status_code == 201:
