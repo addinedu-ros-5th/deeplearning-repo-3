@@ -326,7 +326,7 @@ def main(video_path, vehicle_model_path, traffic_light_model_path):
     df.to_csv(f"./data/output_data/output_{base_filename}.csv", index=False, header=True)
     
     # 데이터프레임을 JSON 파일로 저장
-    save_results_to_json(vehicle_results, traffic_light_results, 'analysis_results.json', video_length)
+    save_results_to_json(vehicle_results, traffic_light_results, f'./data/output_data/output_{base_filename}.json', video_length)
 
 if __name__ == "__main__":
     video_path = "./data/input_data/b.MOV"
