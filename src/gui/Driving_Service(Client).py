@@ -10,6 +10,8 @@ from matplotlib.figure import Figure
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 import res_rc
 import video
+import csv
+from io import StringIO
 import tkinter as tk
 import requests
 import time
