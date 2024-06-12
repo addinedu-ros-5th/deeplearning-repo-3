@@ -10,6 +10,8 @@ from matplotlib.figure import Figure
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 import res_rc
 import video
+import csv
+from io import StringIO
 import tkinter as tk
 import requests
 import time
@@ -55,7 +57,7 @@ class FileUploadThread(QThread):
     def download_video(self, url):
         response = requests.get(url, stream=True)
         if response.status_code == 200:
-            output_path = 'received_' + os.path.basename(url)
+            output_path = os.path.basename(url)
             with open(output_path, 'wb') as f:
                 for chunk in response.iter_content(chunk_size=1024):
                     if chunk:
@@ -73,7 +75,7 @@ class VideoPlayer(QMainWindow, video_class):
         
         self.setWindowTitle("Visual Resualt") 
         
-        self.video_directory = '/home/addinedu/Downloads/6.MOV/'
+        self.video_directory = '../deeplearning-repo-3/data/input_data/6.MOV/'
         self.video_path = 'annotated_' +  video_path
         self.cap = cv2.VideoCapture(self.video_path)
         self.cap = None

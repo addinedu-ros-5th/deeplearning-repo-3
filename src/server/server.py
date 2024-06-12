@@ -6,7 +6,7 @@ from werkzeug.utils import secure_filename
 import os
 import cv2
 from ultralytics import YOLO
-from judge_logic.total_evaluation.total_evaluation import main as evaluation_main
+from judge_logic.total_evaluation import main as evaluation_main
 import zipfile
 
 app = Flask(__name__)
