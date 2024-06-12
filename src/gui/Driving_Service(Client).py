@@ -251,7 +251,7 @@ class Total_gui_Window(QMainWindow, total_gui_class):
     
     def update_data_from_server(self):
         try:
-            server_url = 'http://192.168.0.126:5000/api/processing_complete'
+            server_url = 'http://192.168.0.201:5000/api/processing_complete'
 
             response = requests.get(server_url)
 
@@ -365,12 +365,12 @@ class Total_gui_Window(QMainWindow, total_gui_class):
         self.progress_dialog.setWindowModality(Qt.WindowModal)
         self.progress_dialog.setValue(0)
 
-        url = 'http://192.168.0.126:5000/api/upload'
+        url = 'http://192.168.0.201:5000/api/upload'
         self.thread = FileUploadThread(files_to_analyze, url)
         self.thread.update_progress.connect(self.update_progress)
         self.thread.download_complete.connect(self.finish_analysis)
         self.thread.start()
-        self.progress_dialog.canceled.connect(self.cancel_analysis)
+        # self.progress_dialog.canceled.connect(self.cancel_analysis)
         
     def finish_analysis(self, message):
         self.progress_dialog.reset()
@@ -380,10 +380,6 @@ class Total_gui_Window(QMainWindow, total_gui_class):
         QMessageBox.information(self, "Info", message)
         self.progress_dialog.reset()
         
-    def cancel_analysis(self):
-        self.thread.stop()
-        self.progress_dialog.close()
-        QMessageBox.information(self, "Information", "Analysis cancelled.")
     
     def update_progress(self, value):
         self.progress_dialog.setValue(value)
@@ -426,15 +422,26 @@ class Total_gui_Window(QMainWindow, total_gui_class):
 
         self.fig = plt.Figure()
         self.canvas = FigureCanvas(self.fig)
+        self.canvas.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.canvas.updateGeometry()
 
-        self.graph.addWidget(self.canvas)
+        vbox_layout = self.findChild(QVBoxLayout, "graphlayout")
+        while vbox_layout.count():
+            item = vbox_layout.takeAt(0)
+            widget = item.widget()
+            if widget is not None:
+                widget.deleteLater()
+                
+        vbox_layout.addWidget(self.canvas)
+        
+        # self.graphlayout.addWidget(self.canvas)
         
         for row in range(self.tableWidget1.rowCount()):
             video_ids.append(self.tableWidget1.item(row, 1).text())
             fail_counts.append(int(self.tableWidget1.item(row, 5).text()))
 
         ax = self.fig.add_subplot(111)
-        ax.bar(video_ids, fail_counts, label='Fail Number', color='skyblue')
+        ax.bar(video_ids, fail_counts, color='skyblue')
 
         ax.set_xlabel('Video IDs')
         ax.set_ylabel('Fail Number')
@@ -446,15 +453,7 @@ class Total_gui_Window(QMainWindow, total_gui_class):
             self.grade.setText('fail')
         else:
             self.grade.setText('pass')
-            
-        vbox_layout = self.findChild(QVBoxLayout, "graph")
-        while vbox_layout.count():
-            item = vbox_layout.takeAt(0)
-            widget = item.widget()
-            if widget is not None:
-                widget.deleteLater()
-                
-        vbox_layout.addWidget(self.canvas)
+        
 # -------------------------------------------------------------------------------------------------------------------------------------------
 
 class Sign_up_Window(QDialog, sign_up_class):
@@ -468,7 +467,7 @@ class Sign_up_Window(QDialog, sign_up_class):
         user_id = self.Idld.text()
         
         data = {'user_id': user_id}
-        response = requests.post('http://192.168.0.126:5000/api/check', json=data)
+        response = requests.post('http://192.168.0.201:5000/api/check', json=data)
         
         if response.status_code == 401:
             
@@ -509,7 +508,7 @@ class Sign_up_Window(QDialog, sign_up_class):
             
             
         data = {'user_birthday':user_birthday, 'user_name': user_name, 'user_id': user_id, 'user_password':user_password}
-        response = requests.post('http://192.168.0.126:5000/api/signup', json=data)
+        response = requests.post('http://192.168.0.201:5000/api/signup', json=data)
         
         
         if response.status_code == 201:
@@ -538,7 +537,7 @@ class WindowClass(QMainWindow, from_class) :
         user_password = self.Passwordedit.text()
         
         data = {'user_id': user_id, 'user_password':user_password}
-        response = requests.post('http://192.168.0.126:5000/api/signin', json=data)
+        response = requests.post('http://192.168.0.201:5000/api/signin', json=data)
         
         
         if response.status_code == 201:
