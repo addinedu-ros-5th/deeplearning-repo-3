@@ -16,6 +16,8 @@ import tkinter as tk
 import requests
 import time
 import pandas as pd
+from PyQt5.QtCore import QThread, pyqtSignal
+import zipfile
 
 from_class = uic.loadUiType('./login.ui')[0]
 sign_up_class = uic.loadUiType('./signup.ui')[0]
@@ -25,22 +27,27 @@ video_class = uic.loadUiType('./video.ui')[0]
 
 class FileUploadThread(QThread):
     update_progress = pyqtSignal(int)
-    error = pyqtSignal(str)
     download_complete = pyqtSignal(str)
+    error = pyqtSignal(str)
 
     def __init__(self, files_to_analyze, url):
-        super().__init__()
+        QThread.__init__(self)
         self.files_to_analyze = files_to_analyze
+        print('files_to_analyze:' ,files_to_analyze)
         self.url = url
+        print('url', url)
 
     def run(self):
         try:
             for idx, file_path in enumerate(self.files_to_analyze):
+                print('file_path', file_path)
                 files = {'videos': open(file_path, 'rb')}
                 response = requests.post(self.url, files=files)
+                print('response',response)
                 if response.status_code == 201:
                     data = response.json()
-                    processed_video = data['processed_videos'][0]
+                    processed_video = os.path.basename(data['processed_videos'][0])
+                    print(processed_video)
                     download_url = f"http://192.168.0.201:5000/api/download/{processed_video}"
                     self.download_video(download_url, processed_video)
                 else:
@@ -57,19 +64,20 @@ class FileUploadThread(QThread):
     def download_video(self, url, filename):
         response = requests.get(url, stream=True)
         if response.status_code == 200:
-            output_path = os.path.join('../../data/output_data', filename)
+            extract_to = '/home/addinedu/dev_ws/src/ai_project/deeplearning-repo-3/data/cl_out'
+            output_path = os.path.join(extract_to, filename)
             with open(output_path, 'wb') as f:
                 for chunk in response.iter_content(chunk_size=1024):
                     if chunk:
                         f.write(chunk)
-            self.extract_zip(output_path, '../../data/output_data')
+            self.extract_zip(output_path, extract_to)
         else:
             self.error.emit("Failed to download processed video")
 
     def extract_zip(self, zip_path, extract_to):
         with zipfile.ZipFile(zip_path, 'r') as zip_ref:
             zip_ref.extractall(extract_to)
-        os.remove(zip_path)
+        # os.remove(zip_path)
 
 class VideoPlayer(QMainWindow, video_class):
     def __init__(self, video_path=None):
@@ -78,7 +86,7 @@ class VideoPlayer(QMainWindow, video_class):
         
         self.setWindowTitle("Visual Result") 
         
-        self.video_directory = '../../data/output_data'
+        self.video_directory = '/home/addinedu/dev_ws/src/ai_project/deeplearning-repo-3/data/cl_out/'
         self.video_path = video_path
         self.cap = None
         self.timer = QTimer()
@@ -376,8 +384,11 @@ class Total_gui_Window(QMainWindow, total_gui_class):
         self.thread.start()
         
     def finish_analysis(self, message):
-        self.progress_dialog.reset()
-        self.timer.start(100)
+        QMessageBox.information(self, "Info", message)
+        # Assuming 'zip_name' is known or passed along with the signal
+        for file_path in self.thread.files_to_analyze:
+            zip_name = os.path.splitext(os.path.basename(file_path))[0] + '_analysis_video.zip'
+            self.handle_download_complete(zip_name)
     
     def on_download_complete(self, message):
         QMessageBox.information(self, "Info", message)
@@ -457,30 +468,51 @@ class Total_gui_Window(QMainWindow, total_gui_class):
         else:
             self.grade.setText('pass')
     
-    def load_csv_to_table(self, csv_path):
-        df = pd.read_csv(csv_path)
-        self.tableWidget1.setRowCount(0)
-        for index, row in df.iterrows():
-            row_position = self.tableWidget1.rowCount()
-            self.tableWidget1.insertRow(row_position)
-            self.tableWidget1.setItem(row_position, 1, QTableWidgetItem(str(row['Video_ID'])))
-            self.tableWidget1.setItem(row_position, 2, QTableWidgetItem(str(row['Vehicle'])))
-            self.tableWidget1.setItem(row_position, 3, QTableWidgetItem(str(row['Pedestrian'])))
-            self.tableWidget1.setItem(row_position, 4, QTableWidgetItem(str(row['Traffic'])))
-            self.tableWidget1.setItem(row_position, 5, QTableWidgetItem(str(row['Fail_Num'])))
+    # def load_csv_to_table(self, csv_path):
+    #     df = pd.read_csv(csv_path)
+    #     self.tableWidget1.setRowCount(0)
+    #     for index, row in df.iterrows():
+    #         row_position = self.tableWidget1.rowCount()
+    #         self.tableWidget1.insertRow(row_position)
+    #         self.tableWidget1.setItem(row_position, 1, QTableWidgetItem(str(row['Video_ID'])))
+    #         self.tableWidget1.setItem(row_position, 2, QTableWidgetItem(str(row['Vehicle'])))
+    #         self.tableWidget1.setItem(row_position, 3, QTableWidgetItem(str(row['Pedestrian'])))
+    #         self.tableWidget1.setItem(row_position, 4, QTableWidgetItem(str(row['Traffic'])))
+    #         self.tableWidget1.setItem(row_position, 5, QTableWidgetItem(str(row['Fail_Num'])))
     
+    def load_csv_to_table(self, csv_file_path):
+        import csv
+        with open(csv_file_path, newline='') as csvfile:
+            csvreader = csv.reader(csvfile, delimiter=',')
+            self.tableWidget1.setRowCount(0)  # Clear existing rows
+            for row_data in csvreader:
+                row = self.tableWidget1.rowCount()
+                self.tableWidget1.insertRow(row)
+                for column, data in enumerate(row_data):
+                    item = QTableWidgetItem(data)
+                    self.tableWidget1.setItem(row, column, item)
+
     def handle_download_complete(self, zip_name):
-        extract_to = '/data/output_data'
-        os.makedirs(extract_to, exist_ok=True)
-        self.extract_zip(f"{extract_to}/{zip_name}.zip", extract_to)
-        self.load_csv_to_table(f"{extract_to}/{zip_name}.csv")
-        video_name = f"{extract_to}/output_{zip_name}.mp4"
+        extract_to = '/home/addinedu/dev_ws/src/ai_project/deeplearning-repo-3/data/cl_out'
+        zip_path = os.path.join(extract_to, zip_name)
+
+        self.extract_zip(zip_path, extract_to)
+        base_name = os.path.splitext(zip_name)[0]
+    # Extract the part we need (first character of the base_name)
+        clean_base_name = base_name[0]
+        json_name = clean_base_name + '_analysis_log.json'
+        csv_name = clean_base_name + '_analysis_summary.csv'
+        video_name = clean_base_name + '_analysis_video.mp4'
+        
+
+        ##### 여기에 json 로드해주셈
+        self.load_csv_to_table(os.path.join(extract_to, csv_name))
         self.open_video_ui(video_name)
     
     def extract_zip(self, zip_path, extract_to):
         with zipfile.ZipFile(zip_path, 'r') as zip_ref:
             zip_ref.extractall(extract_to)
-        os.remove(zip_path)
+        # os.remove(zip_path)
 
 
 # -------------------------------------------------------------------------------------------------------------------------------------------

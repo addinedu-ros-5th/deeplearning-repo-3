@@ -30,8 +30,8 @@ db = mysql.connector.connect(
     database="Driving"
 )
 
-UPLOAD_FOLDER = '../../data/output_data'
-PROCESSED_FOLDER = '../../data/output_data'
+UPLOAD_FOLDER = '/home/addinedu/dev_ws/src/ai_project/deeplearning-repo-3/data/output_data'
+PROCESSED_FOLDER = '/home/addinedu/dev_ws/src/ai_project/deeplearning-repo-3/data/output_data'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(PROCESSED_FOLDER, exist_ok=True)
 
@@ -68,9 +68,9 @@ def upload_video():
 
 def process_video(video_path):
     base_filename = os.path.splitext(os.path.basename(video_path))[0]
-    output_video_path = os.path.join(PROCESSED_FOLDER, f'output_{base_filename}.mp4')
-    json_path = os.path.join(PROCESSED_FOLDER, f'{base_filename}.json')
-    csv_path = os.path.join(PROCESSED_FOLDER, f'{base_filename}.csv')
+    output_video_path = os.path.join(PROCESSED_FOLDER, f'{base_filename}_analysis_video.mp4')
+    json_path = os.path.join(PROCESSED_FOLDER, f'{base_filename}_analysis_log.json')
+    csv_path = os.path.join(PROCESSED_FOLDER, f'{base_filename}_analysis_summary.csv')
 
     vehicle_model_path = "yolov8n.pt"
     traffic_light_model_path = "/home/addinedu/dev_ws/src/ai_project/deeplearning-repo-3/src/model/traffic_light/traffic_best_ver2.pt"
@@ -92,7 +92,7 @@ def create_zip_file(video_path, json_path, csv_path):
 
 @app.route('/api/download/<zip_name>', methods=['GET'])
 def download_zip(zip_name):
-    zip_path = os.path.join(PROCESSED_FOLDER, f'{zip_name}.zip')
+    zip_path = os.path.join(PROCESSED_FOLDER, zip_name)
     
     if not os.path.exists(zip_path):
         return jsonify({'error': 'File not found'}), 404

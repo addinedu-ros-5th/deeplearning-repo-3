@@ -324,13 +324,13 @@ def main(video_path, vehicle_model_path, traffic_light_model_path):
     df = df.groupby('ID').apply(get_most_common_row).apply(pd.Series)
 
     # 데이터프레임을 CSV 파일로 저장
-    df.to_csv(f"./data/output_data/{base_filename}_analysis_summary.csv", index=False, header=True)
+    df.to_csv(f"/home/addinedu/dev_ws/src/ai_project/deeplearning-repo-3/data/output_data/{base_filename}_analysis_summary.csv", index=False, header=True)
     
     # 데이터프레임을 JSON 파일로 저장
-    save_results_to_json(vehicle_results, traffic_light_results, f'./data/output_data/{base_filename}_analysis_log.json', video_length)
+    save_results_to_json(vehicle_results, traffic_light_results, f'/home/addinedu/dev_ws/src/ai_project/deeplearning-repo-3/data/output_data/{base_filename}_analysis_log.json', video_length)
 
 if __name__ == "__main__":
-    video_path = "./data/input_data/b.MOV"
+    video_path = "/home/addinedu/dev_ws/src/ai_project/deeplearning-repo-3/data/input_data/a.MOV"
     vehicle_model_path = "./src/model/lane_detect/yolov8n.pt"
     traffic_light_model_path = "./src/model/traffic_light/traffic_best_ver2.pt"
     threshold = 30  # 주행 상태 판단을 위한 임계값 설정
