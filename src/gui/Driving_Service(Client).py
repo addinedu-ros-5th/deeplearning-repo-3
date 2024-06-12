@@ -289,7 +289,7 @@ class Total_gui_Window(QMainWindow, total_gui_class):
     
     def upload_files(self):
         options = QFileDialog.Options()
-        files, _ = QFileDialog.getOpenFileNames(self, "파일 선택", "", "비디오 파일 (*.mp4 *.avi *.mov *.mkv);;모든 파일 (*)", options=options)
+        files, _ = QFileDialog.getOpenFileNames(self, "파일 선택", "", "비디오 파일 (*.mp4 *.avi *.mov *.MOV *.mkv);;모든 파일 (*)", options=options)
         if files:
             for file_path in files:
                 file_name = os.path.basename(file_path)
