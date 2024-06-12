@@ -13,13 +13,13 @@ import video
 import tkinter as tk
 import requests
 import time
+import pandas as pd
 
+from_class = uic.loadUiType('./login.ui')[0]
+sign_up_class = uic.loadUiType('./signup.ui')[0]
 
-from_class = uic.loadUiType('./login.ui')[0] 
-sign_up_class = uic.loadUiType('./signup.ui')[0] 
-
-total_gui_class = uic.loadUiType('./Window.ui')[0] 
-video_class = uic.loadUiType('./video.ui')[0] 
+total_gui_class = uic.loadUiType('./Window.ui')[0]
+video_class = uic.loadUiType('./video.ui')[0]
 
 class FileUploadThread(QThread):
     update_progress = pyqtSignal(int)
@@ -34,13 +34,13 @@ class FileUploadThread(QThread):
     def run(self):
         try:
             for idx, file_path in enumerate(self.files_to_analyze):
-                files = {'file': open(file_path, 'rb')}
+                files = {'videos': open(file_path, 'rb')}
                 response = requests.post(self.url, files=files)
                 if response.status_code == 201:
                     data = response.json()
                     processed_video = data['processed_videos'][0]
-                    download_url = f"{processed_video}"
-                    self.download_video(download_url)
+                    download_url = f"http://192.168.0.201:5000/api/download/{processed_video}"
+                    self.download_video(download_url, processed_video)
                 else:
                     self.error.emit("Failed to upload video")
                     return
@@ -52,30 +52,32 @@ class FileUploadThread(QThread):
         except Exception as e:
             self.error.emit(str(e))
 
-    def download_video(self, url):
+    def download_video(self, url, filename):
         response = requests.get(url, stream=True)
         if response.status_code == 200:
-            output_path = 'received_' + os.path.basename(url)
+            output_path = os.path.join('../../data/output_data', filename)
             with open(output_path, 'wb') as f:
                 for chunk in response.iter_content(chunk_size=1024):
                     if chunk:
                         f.write(chunk)
-            print(f"Video received and saved as '{output_path}'")
+            self.extract_zip(output_path, '../../data/output_data')
         else:
             self.error.emit("Failed to download processed video")
-            
-            
-        
+
+    def extract_zip(self, zip_path, extract_to):
+        with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+            zip_ref.extractall(extract_to)
+        os.remove(zip_path)
+
 class VideoPlayer(QMainWindow, video_class):
     def __init__(self, video_path=None):
         super(VideoPlayer, self).__init__()
         self.setupUi(self)
         
-        self.setWindowTitle("Visual Resualt") 
+        self.setWindowTitle("Visual Result") 
         
-        self.video_directory = '/home/addinedu/Downloads/6.MOV/'
-        self.video_path = 'annotated_' +  video_path
-        self.cap = cv2.VideoCapture(self.video_path)
+        self.video_directory = '../../data/output_data'
+        self.video_path = video_path
         self.cap = None
         self.timer = QTimer()
         self.timer.timeout.connect(self.next_frame)
@@ -106,7 +108,6 @@ class VideoPlayer(QMainWindow, video_class):
 
     def play_pause(self):
         if self.playing:
-            self.next_frame()
             self.timer.stop()
         else:
             self.timer.start(30)
@@ -184,6 +185,7 @@ class VideoPlayer(QMainWindow, video_class):
                     file.write(memo_text)
                 self.memo_file_name = file_name  
 
+
 class Total_gui_Window(QMainWindow, total_gui_class):
     def __init__(self):
         super().__init__()
@@ -200,7 +202,7 @@ class Total_gui_Window(QMainWindow, total_gui_class):
         self.upload.clicked.connect(self.upload_files)
         self.analyze.clicked.connect(self.analyze_files)
         self.delbtn.clicked.connect(self.delete_selected_rows)
-        self.search.clicked.connect(self.serach_from_table)
+        self.search.clicked.connect(self.search_from_table)
         self.searchbar.setPlaceholderText("Enter text to search")
 
         self.tableWidget.setColumnCount(4)
@@ -251,11 +253,11 @@ class Total_gui_Window(QMainWindow, total_gui_class):
     
     def update_data_from_server(self):
         try:
-            server_url = 'http://172.30.1.74:5000/api/processing_complete'
+            server_url = 'http://192.168.0.201:5000/api/upload'
 
-            response = requests.get(server_url)
+            response = requests.post(server_url)
 
-            if response.status_code == 200:
+            if response.status_code == 201:
                 data = response.json()
                 
                 if data: 
@@ -329,12 +331,12 @@ class Total_gui_Window(QMainWindow, total_gui_class):
             self.tableWidget.removeRow(row)
                 
     def toggle_checkbox(self, row, column):
-        if column == 2 | 0:  
+        if column == 2 or column == 0:  
             checkbox_widget = self.tableWidget.cellWidget(row, 0)
             checkbox = checkbox_widget.findChild(QCheckBox)
             checkbox.setChecked(not checkbox.isChecked())
     
-    def serach_from_table(self):
+    def search_from_table(self):
         search_text = self.searchbar.text()
         if search_text == "":
             for row in range(self.tableWidget.rowCount()):
@@ -365,12 +367,11 @@ class Total_gui_Window(QMainWindow, total_gui_class):
         self.progress_dialog.setWindowModality(Qt.WindowModal)
         self.progress_dialog.setValue(0)
 
-        url = 'http://172.30.1.74:5000/api/uploaded'
+        url = 'http://192.168.0.201:5000/api/upload'
         self.thread = FileUploadThread(files_to_analyze, url)
         self.thread.update_progress.connect(self.update_progress)
         self.thread.download_complete.connect(self.finish_analysis)
         self.thread.start()
-        # self.progress_dialog.canceled.connect(self.cancel_analysis)
         
     def finish_analysis(self, message):
         self.progress_dialog.reset()
@@ -394,7 +395,7 @@ class Total_gui_Window(QMainWindow, total_gui_class):
             self.open_video_ui(video_file_name)
             
     def open_video_ui(self, video_file_name):
-        self.other_window = VideoPlayer( video_file_name)
+        self.other_window = VideoPlayer(video_file_name)
         self.other_window.show()
 
     def open_total_gui_window(self):
@@ -453,7 +454,33 @@ class Total_gui_Window(QMainWindow, total_gui_class):
             self.grade.setText('fail')
         else:
             self.grade.setText('pass')
-        
+    
+    def load_csv_to_table(self, csv_path):
+        df = pd.read_csv(csv_path)
+        self.tableWidget1.setRowCount(0)
+        for index, row in df.iterrows():
+            row_position = self.tableWidget1.rowCount()
+            self.tableWidget1.insertRow(row_position)
+            self.tableWidget1.setItem(row_position, 1, QTableWidgetItem(str(row['Video_ID'])))
+            self.tableWidget1.setItem(row_position, 2, QTableWidgetItem(str(row['Vehicle'])))
+            self.tableWidget1.setItem(row_position, 3, QTableWidgetItem(str(row['Pedestrian'])))
+            self.tableWidget1.setItem(row_position, 4, QTableWidgetItem(str(row['Traffic'])))
+            self.tableWidget1.setItem(row_position, 5, QTableWidgetItem(str(row['Fail_Num'])))
+    
+    def handle_download_complete(self, zip_name):
+        extract_to = '/data/output_data'
+        os.makedirs(extract_to, exist_ok=True)
+        self.extract_zip(f"{extract_to}/{zip_name}.zip", extract_to)
+        self.load_csv_to_table(f"{extract_to}/{zip_name}.csv")
+        video_name = f"{extract_to}/output_{zip_name}.mp4"
+        self.open_video_ui(video_name)
+    
+    def extract_zip(self, zip_path, extract_to):
+        with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+            zip_ref.extractall(extract_to)
+        os.remove(zip_path)
+
+
 # -------------------------------------------------------------------------------------------------------------------------------------------
 
 class Sign_up_Window(QDialog, sign_up_class):
@@ -467,7 +494,7 @@ class Sign_up_Window(QDialog, sign_up_class):
         user_id = self.Idld.text()
         
         data = {'user_id': user_id}
-        response = requests.post('http://172.30.1.74:5000/api/check', json=data)
+        response = requests.post('http://192.168.0.201:5000/api/check', json=data)
         
         if response.status_code == 401:
             
@@ -508,12 +535,13 @@ class Sign_up_Window(QDialog, sign_up_class):
             
             
         data = {'user_birthday':user_birthday, 'user_name': user_name, 'user_id': user_id, 'user_password':user_password}
-        response = requests.post('http://172.30.1.74:5000/api/signup', json=data)
+        response = requests.post('http://192.168.0.201:5000/api/signup', json=data)
         
         
         if response.status_code == 201:
             QMessageBox.information(self, 'registration successful', 'You have successfully registered.', QMessageBox.Ok)
             self.accept()
+
 
         elif response.status_code == 404:
             QMessageBox.information(self, 'registration fail', 'Unable to connect to server.', QMessageBox)
@@ -537,7 +565,7 @@ class WindowClass(QMainWindow, from_class) :
         user_password = self.Passwordedit.text()
         
         data = {'user_id': user_id, 'user_password':user_password}
-        response = requests.post('http://172.30.1.74:5000/api/signin', json=data)
+        response = requests.post('http://192.168.0.201:5000/api/signin', json=data)
         
         
         if response.status_code == 201:
@@ -565,8 +593,8 @@ class WindowClass(QMainWindow, from_class) :
        
 if __name__ == "__main__":
     app = QApplication(sys.argv) 
-    myWindows = WindowClass()
-    #myWindows = Total_gui_Window()
+    # myWindows = WindowClass()
+    myWindows = Total_gui_Window()
     myWindows.show() 
     
     sys.exit(app.exec_()) 
