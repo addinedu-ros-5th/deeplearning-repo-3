@@ -137,6 +137,7 @@ class TrafficLightDetector:
             # 최근 크기 변화 계산
             recent_changes = max(self.size_history[obj_id]) - min(self.size_history[obj_id])
             # 주행 상태 판단: 크기 변화가 있는 경우 주행 중으로 판단
+            threshold = 30
             if recent_changes > threshold:
                 return True
         # 주행 상태 판단: 크기 변화가 없는 경우 정지 중으로 판단
@@ -183,7 +184,7 @@ def main(video_path, vehicle_model_path, traffic_light_model_path):
 
     # 인풋 영상 파일명에서 확장자 제거
     base_filename = os.path.splitext(os.path.basename(video_path))[0]
-    output_filename = f"./data/output_data/{base_filename}_analysis_video.mp4"
+    output_filename = f"/home/addinedu/dev_ws/src/ai_project/deeplearning-repo-3/data/output_data/{base_filename}_analysis_video.mp4"
 
     # VideoWriter 객체 생성
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # 코덱 설정 (예: mp4v)

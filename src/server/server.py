@@ -5,9 +5,19 @@ from flask import Flask, request, jsonify, Response, send_file
 from werkzeug.utils import secure_filename
 import os
 import cv2
+import sys
 from ultralytics import YOLO
-from judge_logic.total_evaluation.total_evaluation import main as evaluation_main
 import zipfile
+
+current_dir = os.path.dirname(os.path.abspath(__file__))
+# src 폴더의 절대 경로를 계산
+src_dir = os.path.abspath(os.path.join(current_dir, '../'))
+
+# src 폴더를 sys.path에 추가
+if src_dir not in sys.path:
+    sys.path.append(src_dir)
+
+from judge_logic.total_evaluation.total_evaluation import main as evaluation_main
 
 app = Flask(__name__)
 CORS(app)
@@ -20,13 +30,13 @@ db = mysql.connector.connect(
     database="Driving"
 )
 
-UPLOAD_FOLDER = '/home/addinedu/dev_ws/src/video'
-PROCESSED_FOLDER = '/data/output_data'
+UPLOAD_FOLDER = '../../data/output_data'
+PROCESSED_FOLDER = '../../data/output_data'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(PROCESSED_FOLDER, exist_ok=True)
 
 # Load the YOLOv8 model
-model = YOLO('/home/addinedu/dev_ws/src/YOLO/yolov8n.pt')
+model = YOLO('./src/model/yolo_detection/yolov8n.pt')
 
 @app.route('/api/upload', methods=['POST'])
 def upload_video():
@@ -62,8 +72,10 @@ def process_video(video_path):
     json_path = os.path.join(PROCESSED_FOLDER, f'{base_filename}.json')
     csv_path = os.path.join(PROCESSED_FOLDER, f'{base_filename}.csv')
 
+    vehicle_model_path = "yolov8n.pt"
+    traffic_light_model_path = "/home/addinedu/dev_ws/src/ai_project/deeplearning-repo-3/src/model/traffic_light/traffic_best_ver2.pt"
     # Call the main function from total_evaluation.py
-    evaluation_main(video_path, model.model_path, model.model_path)
+    evaluation_main(video_path, vehicle_model_path, traffic_light_model_path)
 
     return output_video_path, json_path, csv_path
 
@@ -87,39 +99,37 @@ def download_zip(zip_name):
 
     return send_file(zip_path, as_attachment=True), 200
 
-
-##-------------------------------
 @app.route('/api/check', methods=['POST'])
 def check_id():
     data = request.get_json()
-    id = data.get('user_id')
+    user_id = data.get('user_id')
     cursor = db.cursor()
-    cursor.execute("SELECT * FROM member WHERE ID = %s", (id,))
+    cursor.execute("SELECT * FROM member WHERE ID = %s", (user_id,))
     user = cursor.fetchone()
 
     if user:
-        return jsonify({'eerror': '중복된 아이디 임다'}), 401
+        return jsonify({'error': '중복된 아이디 임다'}), 401
     else:
-        return jsonify({'messag': '사용 가능'}), 201
+        return jsonify({'message': '사용 가능'}), 201
 
 @app.route('/api/signup', methods=['POST'])
 def signup():
     data = request.get_json()
-    id = data.get('user_id')
-    password = data.get('user_password')
-    hash_password = base64.b64encode(password.encode('utf-8')).decode('utf-8')
-    name = data.get('user_name')
-    birthday = data.get('user_birthday')
+    user_id = data.get('user_id')
+    user_password = data.get('user_password')
+    hash_password = base64.b64encode(user_password.encode('utf-8')).decode('utf-8')
+    user_name = data.get('user_name')
+    user_birthday = data.get('user_birthday')
     # 데이터베이스에서 사용자가 이미 존재하는지 확인
     cursor = db.cursor()
-    cursor.execute("SELECT * FROM member WHERE ID = %s", (id,))
+    cursor.execute("SELECT * FROM member WHERE ID = %s", (user_id,))
     user = cursor.fetchone()
 
     if user:
         return jsonify({'error': 'Username already exists'}), 400
     
     # 새로운 사용자 생성
-    cursor.execute("INSERT INTO member (Birthday, Name, ID, Password) VALUES (%s, %s, %s, %s)", (birthday, name, id, hash_password))
+    cursor.execute("INSERT INTO member (Birthday, Name, ID, Password) VALUES (%s, %s, %s, %s)", (user_birthday, user_name, user_id, hash_password))
     db.commit()
     return jsonify({'message': '회원가입 완료'}), 201
 
@@ -127,11 +137,11 @@ def signup():
 def signin():
     data = request.get_json()
 
-    id = data.get('user_id')
-    password = data.get('user_password')
-    hash_password = base64.b64encode(password.encode('utf-8')).decode('utf-8')
+    user_id = data.get('user_id')
+    user_password = data.get('user_password')
+    hash_password = base64.b64encode(user_password.encode('utf-8')).decode('utf-8')
     cursor = db.cursor()
-    cursor.execute("SELECT * FROM member WHERE ID = %s AND Password = %s", (id, hash_password))
+    cursor.execute("SELECT * FROM member WHERE ID = %s AND Password = %s", (user_id, hash_password))
     user = cursor.fetchone()
     if user:
         return jsonify({'message': '로그인 완료'}), 201
