@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1205</width>
-    <height>787</height>
+    <width>1225</width>
+    <height>819</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -24,8 +24,8 @@
     <rect>
      <x>10</x>
      <y>20</y>
-     <width>1181</width>
-     <height>751</height>
+     <width>1201</width>
+     <height>781</height>
     </rect>
    </property>
    <widget class="QWidget" name="page">
@@ -34,8 +34,8 @@
       <rect>
        <x>10</x>
        <y>20</y>
-       <width>1161</width>
-       <height>721</height>
+       <width>1181</width>
+       <height>751</height>
       </rect>
      </property>
      <layout class="QGridLayout" name="gridLayout">
@@ -268,26 +268,23 @@ background-color: rgb(222, 221, 218);</string>
       <item row="0" column="1">
        <layout class="QVBoxLayout" name="verticalLayout">
         <item>
-         <widget class="QLabel" name="label">
-          <property name="text">
-           <string> Detail Result List</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QListWidget" name="list"/>
-        </item>
-        <item>
          <layout class="QHBoxLayout" name="horizontalLayout_4">
           <item>
            <widget class="QLabel" name="label_2">
             <property name="text">
-             <string>Memo</string>
+             <string> Detail Result List</string>
             </property>
            </widget>
           </item>
+         </layout>
+        </item>
+        <item>
+         <widget class="QTableWidget" name="tableWidget2"/>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_5">
           <item>
-           <spacer name="horizontalSpacer_3">
+           <spacer name="horizontalSpacer_2">
             <property name="orientation">
              <enum>Qt::Horizontal</enum>
             </property>
@@ -300,7 +297,7 @@ background-color: rgb(222, 221, 218);</string>
            </spacer>
           </item>
           <item>
-           <widget class="QPushButton" name="Save">
+           <widget class="QPushButton" name="Json_2">
             <property name="minimumSize">
              <size>
               <width>50</width>
@@ -314,28 +311,28 @@ background-color: rgb(222, 221, 218);</string>
              </size>
             </property>
             <property name="text">
-             <string>Save</string>
+             <string>Json</string>
             </property>
            </widget>
           </item>
          </layout>
         </item>
         <item>
-         <widget class="QTextEdit" name="memotext">
+         <widget class="QTextEdit" name="textEdit">
           <property name="minimumSize">
            <size>
             <width>0</width>
-            <height>150</height>
+            <height>300</height>
            </size>
           </property>
           <property name="maximumSize">
            <size>
             <width>16777215</width>
-            <height>150</height>
+            <height>300</height>
            </size>
           </property>
           <property name="readOnly">
-           <bool>false</bool>
+           <bool>true</bool>
           </property>
          </widget>
         </item>
