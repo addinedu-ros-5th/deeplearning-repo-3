@@ -5,16 +5,16 @@
     </p>
 
     
-## INDEX
+## **INDEX**
 
-### 1. OVERVIEW
-* Project Goal & Background
+### [1. OVERVIEW](#1.-overview)
+* Project Outline & Goal
 * Team Introduce
 ### 2. TECHNOLOGY & DESIGN
 * **DESIGN**
   * Elements
   * System Architecture
-  * Senarios
+  * Scenarios
 * **TECHNOLOGY**
   * Model
   * Judge Logic
@@ -30,7 +30,19 @@
 
 
 ## 1. OVERVIEW
-### 1-1. Project Goal & Background  
+* Project Outline & Goal  
+    * Ountline
+    * Goal
 
+* Team Introduce  
+
+|김민경👑|곽민기|김세현|손영수|이현복|
+|:------:|:---:|:---:|:---:|:---:|
+|사진|사진|사진|사진|사진|
+|[@miggyo](https://github.com/miggyo)|[@Ignimkk](https://github.com/Ignimkk)|[@aaaaax5](https://github.com/aaaaax5)|[@YeongsuSon](https://github.com/ysu0415)|[@Hyunbok](https://github.com/HyunExample)|  <br>
+
+*❕ Role
+---
+    
 
 
