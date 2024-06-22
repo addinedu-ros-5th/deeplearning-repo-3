@@ -2,16 +2,19 @@
 
 <p align="center">
 <img src="https://github.com/addinedu-ros-5th/deeplearning-repo-3/assets/163129674/6dfc2218-1272-43a0-bf6d-095c253efb9f" >
-    </p>
+</p>
 
-    
 ## **INDEX**
 
-### [1. OVERVIEW](#1.-overview)
+### [1. OVERVIEW](#1-overview)
 * Project Outline & Goal
+    * Outline
+    * Goal
 * Team Introduce
+    * Role
 * Technical Skills
-### 2. TECHNOLOGY & DESIGN
+
+### [2. TECHNOLOGY & DESIGN](#2-technology-and-design)
 * **DESIGN**
   * Elements
   * System Architecture
@@ -20,19 +23,19 @@
   * Model
   * Judge Logic
   * GUI & Server
-### 3. RESULT & EVALUATIONS
+
+### [3. RESULT & EVALUATIONS](#3-result-and-evaluations)
 * RESULT DEMO VIDEO
 * System Evaluations
 
-### 4. Review
+### [4. REVIEW](#4-review)
 * Improvements  
 
 ---  
 
-
 ## 1. OVERVIEW
 * Project Outline & Goal  
-    * Ountline
+    * Outline
     * Goal
 
 * Team Introduce  
@@ -40,9 +43,9 @@
 |김민경👑|김세현|곽민기|손영수|이현복|
 |:------:|:---:|:---:|:---:|:---:|
 |사진|사진|사진|사진|사진|
-|[@miggyo](https://github.com/miggyo)|[@aaaaax5](https://github.com/aaaaax5)|[@Ignimkk](https://github.com/Ignimkk)|[@YeongsuSon](https://github.com/ysu0415)|[@Hyunbok](https://github.com/HyunExample)|  <br>
+|[@miggyo](https://github.com/miggyo)|[@aaaaax5](https://github.com/aaaaax5)|[@Ignimkk](https://github.com/Ignimkk)|[@YeongsuSon](https://github.com/ysu0415)|[@Hyunbok](https://github.com/HyunExample)|
 
-* Role ❕
+* Role 
     
 |직책|이름|역할|
 |:------:|:---:|:---:|
@@ -55,17 +58,17 @@
 * Technical Skills  
 스킬 사진들
 
-## 2. TECHNOLOGY & DESIGN  
+## 2. TECHNOLOGY AND DESIGN  
 * **DESIGN**
   * Elements
     <p align="center">
     <img src="https://github.com/addinedu-ros-5th/deeplearning-repo-3/assets/163129674/b4315a3c-d8c5-459a-9f3a-f2bb5553f001" >
-        </p>
+    </p>
   
   * System Architecture
     <p align="center">
     <img src="https://github.com/addinedu-ros-5th/deeplearning-repo-3/assets/163129674/8a9b88a5-8a1e-4261-823a-b6147984337f" >
-        </p>
+    </p>
 
   * Scenarios
     * Sign-up & Sign-in  
@@ -84,8 +87,10 @@
  
   * GUI & Server
  
-## 3. RESULT & EVALUATIONS
+## 3. RESULT AND EVALUATIONS
 * Result Demo Video
 
 * System Evaluations
 
+## 4. REVIEW
+* Improvements
