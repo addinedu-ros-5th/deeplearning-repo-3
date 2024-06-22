@@ -58,11 +58,25 @@
 ## 2. TECHNOLOGY & DESIGN  
 * **DESIGN**
   * Elements
- 
+    <p align="center">
+    <img src="https://github.com/addinedu-ros-5th/deeplearning-repo-3/assets/163129674/b4315a3c-d8c5-459a-9f3a-f2bb5553f001" >
+        </p>
+  
   * System Architecture
- 
-  * Scenarios
+    <p align="center">
+    <img src="https://github.com/addinedu-ros-5th/deeplearning-repo-3/assets/163129674/8a9b88a5-8a1e-4261-823a-b6147984337f" >
+        </p>
 
+  * Scenarios
+    * Sign-up & Sign-in  
+<img src="https://github.com/addinedu-ros-5th/deeplearning-repo-3/assets/163129674/3a77811b-8734-4344-9406-bb51e6c18f53" width=450 height=400>  <img src="https://github.com/addinedu-ros-5th/deeplearning-repo-3/assets/163129674/b054811f-d711-4a6c-8bb6-21146f1fb481" width=450 height=400>  
+
+    * GUI & Server  
+<p align="center">
+<img src="https://github.com/addinedu-ros-5th/deeplearning-repo-3/assets/163129674/6b13fa5c-53b3-413f-aeaa-4e2a0adf96a4" width=900 height=600 >
+</p>
+
+    
 * **TECHNOLOGY**
   * Model
  
